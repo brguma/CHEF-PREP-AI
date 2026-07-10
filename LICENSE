@@ -1,0 +1,76 @@
+LICENÇA DE SOFTWARE PROPRIETÁRIO
+================================
+
+ChefPrep — Sistema Inteligente de Gestão da Cozinha Doméstica
+Copyright © 2026 Bruno Machado — BM Engenharia e Consultoria Ltda.
+Todos os direitos reservados. / All rights reserved.
+
+1. TITULARIDADE
+   Este software, incluindo seu código-fonte, design de interface, banco de
+   receitas, textos, estrutura de dados, ícones e demais elementos que o
+   compõem (o "Software"), é obra protegida nos termos da Lei nº 9.609/1998
+   (Lei do Software) e da Lei nº 9.610/1998 (Lei de Direitos Autorais),
+   sendo de titularidade exclusiva de Bruno Machado — BM Engenharia e
+   Consultoria Ltda. (o "Titular").
+
+2. AUSÊNCIA DE LICENÇA DE USO GERAL
+   A disponibilização pública deste Software para acesso e uso pessoal via
+   navegador NÃO constitui cessão, transferência ou licenciamento de
+   qualquer direito de propriedade intelectual sobre ele.
+
+3. O QUE É PERMITIDO
+   a) Acessar e utilizar o Software, na forma disponibilizada pelo Titular,
+      para fins pessoais e não comerciais;
+   b) Instalar o aplicativo (PWA) em dispositivos de uso próprio;
+   c) Exportar e utilizar livremente os DADOS inseridos pelo próprio
+      usuário (estoque, receitas próprias, planos e listas), que pertencem
+      ao usuário.
+
+4. O QUE É PROIBIDO SEM AUTORIZAÇÃO PRÉVIA E EXPRESSA DO TITULAR
+   a) Copiar, reproduzir, distribuir ou republicar o Software, no todo ou
+      em parte, em qualquer meio;
+   b) Modificar, adaptar, traduzir ou criar obras derivadas;
+   c) Utilizar o código-fonte, o banco de receitas ou qualquer componente
+      em outros projetos, produtos ou serviços;
+   d) Comercializar, sublicenciar, alugar ou explorar economicamente o
+      Software;
+   e) Remover ou alterar avisos de direitos autorais ou esta licença;
+   f) Utilizar o nome "ChefPrep", sua identidade visual ou seus ícones para
+      identificar outros produtos ou serviços.
+
+5. ISENÇÃO DE GARANTIAS
+   O Software é fornecido "NO ESTADO EM QUE SE ENCONTRA" (as is), sem
+   garantias de qualquer natureza, expressas ou implícitas, incluindo, sem
+   limitação, garantias de adequação a um propósito específico, precisão de
+   informações nutricionais ou disponibilidade contínua. O uso das receitas
+   e informações é de responsabilidade exclusiva do usuário.
+
+6. LIMITAÇÃO DE RESPONSABILIDADE
+   Em nenhuma hipótese o Titular será responsável por danos diretos ou
+   indiretos decorrentes do uso ou da impossibilidade de uso do Software,
+   na máxima extensão permitida pela legislação aplicável.
+
+7. VIOLAÇÕES
+   O uso não autorizado sujeita o infrator às sanções civis e penais
+   previstas na legislação brasileira, em especial nos arts. 12 a 14 da
+   Lei nº 9.609/1998, sem prejuízo de medidas junto a plataformas de
+   hospedagem e distribuição (ex.: notificações de remoção/DMCA).
+
+8. CONTATO PARA LICENCIAMENTO
+   Interessados em licenciar, integrar ou utilizar comercialmente este
+   Software devem contatar o Titular: BM Engenharia e Consultoria Ltda.
+
+9. FORO
+   Fica eleito o foro da Comarca da Capital do Estado do Rio de Janeiro
+   para dirimir quaisquer controvérsias oriundas desta licença.
+
+--------------------------------------------------------------------------
+ENGLISH SUMMARY (non-binding): This is proprietary software owned by
+Bruno Machado — BM Engenharia e Consultoria Ltda. Personal, non-commercial
+use as provided is permitted. Copying, modification, redistribution, or
+commercial use of the source code, recipe database, or any component is
+prohibited without prior written permission. Provided "as is", without
+warranties. The Portuguese text above prevails.
+--------------------------------------------------------------------------
+
+Versão desta licença: 1.0 — Julho/2026
