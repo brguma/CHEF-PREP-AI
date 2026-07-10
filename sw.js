@@ -1,5 +1,5 @@
 /* ChefPrep — service worker: app shell em cache, offline-first */
-const CACHE = 'chefprep-v1.1.0';
+const CACHE = 'chefprep-v1.3.0';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
                './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
