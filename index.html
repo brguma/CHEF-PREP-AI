@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1D3557">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121A29">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ChefPrep">
+<title>ChefPrep — Gestão da Cozinha</title>
+<style>
+/* ============ TOKENS — tema "esmaltado" ============ */
+:root{
+  --esmalte:#1D3557;        /* azul de caneca esmaltada */
+  --esmalte-fundo:#16294A;
+  --louca:#FAF7F0;          /* branco-louça quente */
+  --card:#FFFFFF;
+  --borda-rim:#C7402D;      /* vermelho da borda esmaltada */
+  --salsa:#2E7D4F;          /* pode fazer agora */
+  --salsa-suave:#E4F0E8;
+  --mostarda:#C98A1B;       /* vencendo / quase lá */
+  --mostarda-suave:#FBF1DC;
+  --tinta:#2B2A26;
+  --cinza:#877F70;
+  --linha:#E6E0D2;
+  --traco:#1D3557;          /* bordas de destaque (clareia no dark) */
+  --raio:14px;
+  --sombra:0 1px 3px rgba(29,53,87,.10),0 4px 14px rgba(29,53,87,.06);
+  --fonte:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --louca:#121A29;         /* tom do ícone */
+    --card:#1B2536;
+    --tinta:#ECE7DB;
+    --cinza:#98A1B3;
+    --linha:#2E3B54;
+    --esmalte:#22406E;
+    --traco:#4A6EA8;
+    --salsa-suave:#17362A;
+    --mostarda-suave:#3A2E14;
+    --sombra:0 1px 3px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--fonte);background:var(--louca);color:var(--tinta);
+  min-height:100dvh;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:16px}
+:focus-visible{outline:3px solid var(--mostarda);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ============ CABEÇALHO ============ */
+header{background:var(--esmalte);color:#fff;padding:14px 18px calc(14px);
+  padding-top:calc(14px + env(safe-area-inset-top));
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:4px solid var(--borda-rim)}
+.marca{display:flex;flex-direction:column;gap:1px}
+.marca b{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.marca span{font-size:10.5px;text-transform:uppercase;letter-spacing:.14em;opacity:.75}
+.btn-config{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.12);font-size:18px}
+
+/* ============ LAYOUT ============ */
+main{max-width:680px;margin:0 auto;padding:16px 16px 32px}
+.secao-rotulo{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.16em;color:var(--cinza);margin:22px 0 10px;
+  display:flex;align-items:center;gap:10px}
+.secao-rotulo::after{content:"";flex:1;height:1px;background:var(--linha)}
+.vazio{border:2px dashed var(--linha);border-radius:var(--raio);padding:26px 18px;
+  text-align:center;color:var(--cinza);font-size:14px;line-height:1.55}
+.vazio b{color:var(--tinta);display:block;margin-bottom:4px;font-size:15px}
+
+/* ============ CARDS "ESMALTADOS" (assinatura) ============ */
+.card{background:var(--card);border:2px solid var(--traco);border-radius:var(--raio);
+  box-shadow:inset 0 0 0 3px var(--card),inset 0 0 0 4px var(--linha),var(--sombra);
+  padding:14px;margin-bottom:12px}
+.card.pronta{border-color:var(--salsa)}
+.card.quase{border-color:var(--mostarda)}
+.card-topo{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.card h3{font-size:16.5px;font-weight:800;letter-spacing:-.01em;line-height:1.25}
+.card .meta{font-size:12.5px;color:var(--cinza);margin-top:3px}
+.badge{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+  padding:4px 9px;border-radius:99px;white-space:nowrap}
+.badge.ok{background:var(--salsa-suave);color:var(--salsa)}
+.badge.um{background:var(--mostarda-suave);color:var(--mostarda)}
+.badge.quase{background:#EEE9DD;color:var(--cinza)}
+.badge.venc{background:#F8E3DF;color:var(--borda-rim)}
+
+/* placar de ingredientes: bolinhas */
+.placar{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.pt{width:11px;height:11px;border-radius:50%;border:2px solid var(--salsa)}
+.pt.tem{background:var(--salsa)}
+.pt.falta{border-color:var(--borda-rim);background:transparent}
+.pt.opc{border-color:var(--linha);background:transparent}
+.pt.bas{border-color:#5B84C4;background:#5B84C4}
+.placar-legenda{font-size:12px;color:var(--cinza);margin-top:6px}
+.placar-legenda b{color:var(--borda-rim);font-weight:700}
+
+.card-acoes{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* ============ BOTÕES ============ */
+.btn{padding:10px 16px;border-radius:10px;font-size:14px;font-weight:700;
+  display:inline-flex;align-items:center;gap:7px;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn-primario{background:var(--esmalte);color:#fff}
+.btn-verde{background:var(--salsa);color:#fff}
+.btn-contorno{border:2px solid var(--linha);background:var(--card);color:var(--tinta)}
+.btn-perigo{color:var(--borda-rim);border:2px solid #F0D5D0;background:#fff}
+.btn-mini{padding:7px 12px;font-size:13px;border-radius:9px}
+.btn-fav{font-size:20px;line-height:1;padding:4px}
+
+/* ============ INÍCIO ============ */
+.hero{background:var(--esmalte);color:#fff;border-radius:var(--raio);
+  padding:20px 18px;margin-bottom:6px;border:2px solid var(--esmalte);
+  box-shadow:inset 0 0 0 3px var(--esmalte),inset 0 0 0 4px rgba(255,255,255,.25)}
+.hero .pergunta{font-size:13px;text-transform:uppercase;letter-spacing:.12em;opacity:.75}
+.hero .numerao{font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin:6px 0 2px}
+.hero .resposta{font-size:14.5px;opacity:.92}
+.alerta-validade{background:var(--mostarda-suave);border:2px solid var(--mostarda);
+  border-radius:12px;padding:12px 14px;font-size:13.5px;margin:12px 0;line-height:1.5}
+.alerta-validade b{color:var(--mostarda)}
+.atalhos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.atalho{background:var(--card);border:2px solid var(--linha);border-radius:12px;
+  padding:14px 12px;text-align:left;font-size:13.5px;font-weight:700;line-height:1.3}
+.atalho span{display:block;font-size:20px;margin-bottom:6px}
+
+/* ============ BUSCA E FILTROS ============ */
+.barra-busca{display:flex;gap:8px;margin-bottom:12px}
+.barra-busca input{flex:1;padding:12px 14px;border:2px solid var(--linha);
+  border-radius:12px;background:var(--card)}
+.barra-busca input:focus{border-color:var(--esmalte);outline:none}
+.chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;
+  -webkit-overflow-scrolling:touch}
+.chip{padding:7px 13px;border-radius:99px;border:2px solid var(--linha);
+  background:var(--card);font-size:13px;font-weight:600;white-space:nowrap;color:var(--cinza)}
+.chip.ativo{background:var(--esmalte);border-color:var(--esmalte);color:#fff}
+
+/* ============ ESTOQUE ============ */
+.abas-local{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.aba-local{padding:9px 4px;border-radius:10px;border:2px solid var(--linha);
+  background:var(--card);font-size:12.5px;font-weight:700;color:var(--cinza);text-align:center}
+.aba-local.ativo{background:var(--esmalte);border-color:var(--esmalte);color:#fff}
+.item-estoque{display:flex;align-items:center;gap:12px;background:var(--card);
+  border:2px solid var(--linha);border-radius:12px;padding:11px 13px;margin-bottom:8px}
+.item-estoque.vencendo{border-color:var(--mostarda)}
+.item-estoque.vencido{border-color:var(--borda-rim)}
+.item-info{flex:1;min-width:0}
+.item-info b{font-size:14.5px;display:block}
+.item-info small{font-size:12px;color:var(--cinza)}
+.item-qtd{display:flex;align-items:center;gap:6px}
+.stepper{width:30px;height:30px;border-radius:8px;border:2px solid var(--linha);
+  font-size:16px;font-weight:800;display:grid;place-items:center;background:var(--card)}
+.item-qtd .valor{min-width:52px;text-align:center;font-weight:700;font-size:14px}
+
+/* ============ PLANO SEMANAL ============ */
+.dia-plano{background:var(--card);border:2px solid var(--linha);border-radius:12px;
+  padding:12px 14px;margin-bottom:10px}
+.dia-plano.hoje{border-color:var(--traco)}
+.dia-plano h4{font-size:13px;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--cinza);margin-bottom:8px;display:flex;justify-content:space-between}
+.dia-plano h4 .hoje-tag{color:var(--esmalte)}
+.refeicao{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:14px;
+  border-top:1px dashed var(--linha)}
+.refeicao:first-of-type{border-top:none}
+.refeicao .rotulo-ref{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--cinza);width:64px;flex-shrink:0}
+.refeicao .nome-rec{flex:1;font-weight:600}
+.refeicao .vago{flex:1;color:var(--cinza);font-style:italic;font-size:13px}
+.macro-dia{font-size:12px;color:var(--cinza);margin-top:8px;padding-top:8px;
+  border-top:1px dashed var(--linha)}
+
+/* ============ LISTA DE COMPRAS ============ */
+.item-lista{display:flex;align-items:center;gap:12px;background:var(--card);
+  border:2px solid var(--linha);border-radius:12px;padding:12px 13px;margin-bottom:8px}
+.item-lista.comprado{opacity:.5}
+.item-lista.comprado .nome{text-decoration:line-through}
+.check{width:26px;height:26px;border-radius:8px;border:2px solid var(--traco);
+  display:grid;place-items:center;font-size:15px;color:#fff;flex-shrink:0;background:var(--card)}
+.item-lista.comprado .check{background:var(--salsa);border-color:var(--salsa)}
+.item-lista .nome{flex:1;font-size:14.5px;font-weight:600}
+.item-lista small{color:var(--cinza);font-size:12px}
+
+/* ============ NAV INFERIOR ============ */
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);
+  border-top:2px solid var(--linha);display:grid;grid-template-columns:repeat(5,1fr);
+  padding-bottom:env(safe-area-inset-bottom);z-index:50}
+.nav-item{padding:9px 2px 7px;display:flex;flex-direction:column;align-items:center;
+  gap:2px;font-size:10.5px;font-weight:700;color:var(--cinza);
+  text-transform:uppercase;letter-spacing:.05em}
+.nav-item span{font-size:20px}
+.nav-item.ativo{color:var(--traco)}
+.nav-item.ativo::before{content:"";position:absolute;top:0;width:36px;height:3px;
+  background:var(--borda-rim);border-radius:0 0 3px 3px}
+.nav-item{position:relative}
+
+/* ============ OVERLAYS / MODAIS ============ */
+.overlay{position:fixed;inset:0;background:rgba(29,42,63,.55);z-index:100;
+  display:flex;align-items:flex-end;justify-content:center}
+.folha{background:var(--louca);width:100%;max-width:680px;max-height:92dvh;
+  border-radius:20px 20px 0 0;overflow-y:auto;padding:18px 18px 34px;
+  animation:sobe .22s ease-out}
+@keyframes sobe{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+.folha-topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.folha-topo h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.btn-fechar{width:36px;height:36px;border-radius:50%;background:var(--linha);
+  font-size:16px;display:grid;place-items:center}
+
+/* ============ FORMULÁRIOS ============ */
+.campo{margin-bottom:14px}
+.campo label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--cinza);margin-bottom:6px}
+.campo input,.campo select,.campo textarea{width:100%;padding:11px 13px;
+  border:2px solid var(--linha);border-radius:10px;background:var(--card)}
+.campo textarea{min-height:90px;resize:vertical}
+.campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--esmalte);outline:none}
+.linha-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.linha-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
+.dica{font-size:12px;color:var(--cinza);margin-top:5px;line-height:1.4}
+
+/* ============ DETALHE DA RECEITA ============ */
+.det-cab h2{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.det-meta{display:flex;gap:14px;font-size:13px;color:var(--cinza);margin:8px 0 4px;flex-wrap:wrap}
+.porcoes-ctl{display:flex;align-items:center;gap:12px;background:var(--card);
+  border:2px solid var(--linha);border-radius:12px;padding:10px 14px;margin:14px 0}
+.porcoes-ctl .rotulo{flex:1;font-size:13px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--cinza)}
+.porcoes-ctl .num{font-size:18px;font-weight:800;min-width:28px;text-align:center}
+.ing-linha{display:flex;align-items:center;gap:10px;padding:9px 0;
+  border-bottom:1px dashed var(--linha);font-size:14.5px}
+.ing-linha .pt{flex-shrink:0}
+.ing-linha .qtd-ing{color:var(--cinza);font-size:13px;margin-left:auto;white-space:nowrap}
+.ing-linha.sem{color:var(--borda-rim)}
+.ing-linha.sem .qtd-ing{color:var(--borda-rim)}
+.passo{display:flex;gap:12px;padding:11px 0;border-bottom:1px dashed var(--linha);
+  font-size:14.5px;line-height:1.55}
+.passo .n{width:26px;height:26px;border-radius:50%;background:var(--esmalte);color:#fff;
+  font-size:13px;font-weight:800;display:grid;place-items:center;flex-shrink:0}
+
+/* ============ MODO COZINHANDO ============ */
+.cozinhando{position:fixed;inset:0;background:var(--esmalte);color:#fff;z-index:200;
+  display:flex;flex-direction:column;padding:calc(18px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom))}
+.coz-topo{display:flex;justify-content:space-between;align-items:center;font-size:13px;
+  text-transform:uppercase;letter-spacing:.12em;opacity:.85}
+.coz-progresso{display:flex;gap:5px;margin:16px 0}
+.coz-progresso i{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.25)}
+.coz-progresso i.feito{background:var(--mostarda)}
+.coz-corpo{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.coz-num{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--mostarda);font-weight:800}
+.coz-texto{font-size:23px;font-weight:700;line-height:1.45;letter-spacing:-.01em}
+.coz-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.coz-nav .btn{justify-content:center;padding:15px;font-size:15px}
+.coz-nav .btn-volta{background:rgba(255,255,255,.14);color:#fff}
+.coz-nav .btn-avanca{background:var(--mostarda);color:var(--esmalte-fundo)}
+.coz-timer{background:rgba(255,255,255,.16);color:#fff;padding:7px 13px;border-radius:99px;
+  font-size:13px;font-weight:800;letter-spacing:.02em}
+.coz-timer.fim{background:var(--borda-rim);animation:pulsa 1s infinite}
+@keyframes pulsa{50%{opacity:.6}}
+.btn-timer{margin-top:4px;background:rgba(255,255,255,.16);color:#fff;padding:10px 15px;
+  border-radius:10px;font-size:14px;font-weight:700;align-self:flex-start}
+
+/* ============ CONFIG ============ */
+.perfil-opcoes{display:grid;gap:9px;margin-bottom:6px}
+.perfil-op{display:flex;gap:12px;align-items:flex-start;background:var(--card);
+  border:2px solid var(--linha);border-radius:12px;padding:13px 14px;text-align:left}
+.perfil-op.ativo{border-color:var(--traco)}
+.perfil-op b{display:block;font-size:14.5px}
+.perfil-op small{font-size:12.5px;color:var(--cinza);line-height:1.45}
+.perfil-op .radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--linha);
+  flex-shrink:0;margin-top:2px}
+.perfil-op.ativo .radio{border-color:var(--traco);background:var(--traco);
+  box-shadow:inset 0 0 0 4px var(--card)}
+
+/* toast */
+.toast{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;
+  transform:translateX(-50%);background:var(--tinta);color:var(--louca);padding:11px 18px;
+  border-radius:99px;font-size:13.5px;font-weight:600;z-index:300;white-space:nowrap;
+  animation:sobe .2s ease-out;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+
+.escondido{display:none!important}
+@media(min-width:700px){
+  .atalhos{grid-template-columns:repeat(4,1fr)}
+  .folha{border-radius:20px;margin-bottom:4vh;max-height:88dvh}
+  .overlay{align-items:center}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="marca">
+    <b>ChefPrep</b>
+    <span>Gestão da cozinha</span>
+  </div>
+  <button class="btn-config" onclick="UI.abrirConfig()" aria-label="Configurações">⚙️</button>
+</header>
+
+<main id="tela"></main>
+
+<nav aria-label="Navegação principal">
+  <button class="nav-item ativo" data-tab="inicio" onclick="UI.ir('inicio')"><span>🏠</span>Início</button>
+  <button class="nav-item" data-tab="receitas" onclick="UI.ir('receitas')"><span>📖</span>Receitas</button>
+  <button class="nav-item" data-tab="estoque" onclick="UI.ir('estoque')"><span>🧊</span>Estoque</button>
+  <button class="nav-item" data-tab="plano" onclick="UI.ir('plano')"><span>📅</span>Plano</button>
+  <button class="nav-item" data-tab="lista" onclick="UI.ir('lista')"><span>🛒</span>Lista</button>
+</nav>
+
+<div id="overlays"></div>
+
+<script>
+/* =====================================================================
+   ChefPrep v1.0 — Sistema Inteligente de Gestão da Cozinha Doméstica
+   Offline-first · Zero dependências · IndexedDB
+   Arquitetura: camada de dados → engines determinísticos → UI
+   Costuras para v2 (IA): SuggestionProvider · schema RecipeImporter
+   ===================================================================== */
+
+/* ============ UTILS ============ */
+const U = {
+  id: () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+  norm(s) { // normalização canônica de nomes de ingredientes
+    return (s || '').toLowerCase().trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ');
+  },
+  esc(s) {
+    return (s || '').replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  },
+  isoLocal(d) { // data local (toISOString é UTC e erra o dia à noite no Brasil)
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+      + '-' + String(d.getDate()).padStart(2, '0');
+  },
+  hojeISO() { return U.isoLocal(new Date()); },
+  diasAte(iso) {
+    if (!iso) return null;
+    const d = new Date(iso + 'T12:00:00') - new Date(U.hojeISO() + 'T12:00:00');
+    return Math.round(d / 86400000);
+  },
+  fmtQtd(n) {
+    if (n == null || isNaN(n)) return '';
+    return (Math.round(n * 100) / 100).toString().replace('.', ',');
+  },
+  diaSemana: ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado']
+};
+
+/* ============ SINÔNIMOS PT-BR (busca "inteligente" determinística) ============ */
+const SINONIMOS = {
+  'macaxeira': 'mandioca', 'aipim': 'mandioca',
+  'jerimum': 'abobora', 'moranga': 'abobora',
+  'couve manteiga': 'couve', 'couve-manteiga': 'couve',
+  'cheiro verde': 'cheiro-verde', 'cheiro-verde': 'salsinha',
+  'coentro largo': 'coentro',
+  'pimentao verde': 'pimentao', 'pimentao vermelho': 'pimentao', 'pimentao amarelo': 'pimentao',
+  'cebolinha verde': 'cebolinha',
+  'tomate italiano': 'tomate', 'tomate cereja': 'tomate',
+  'alho poro': 'alho-poro', 'alho-poró': 'alho-poro',
+  'peito de frango': 'frango', 'file de frango': 'frango', 'frango desfiado': 'frango',
+  'sobrecoxa': 'frango', 'coxa de frango': 'frango',
+  'carne moida': 'carne moida', 'patinho moido': 'carne moida', 'acem moido': 'carne moida',
+  'file mignon': 'carne', 'alcatra': 'carne', 'contra file': 'carne', 'contrafile': 'carne',
+  'macarrao espaguete': 'macarrao', 'espaguete': 'macarrao', 'penne': 'macarrao',
+  'parafuso': 'macarrao', 'talharim': 'macarrao',
+  'queijo mucarela': 'queijo mussarela', 'mucarela': 'queijo mussarela', 'mussarela': 'queijo mussarela',
+  'queijo minas': 'queijo', 'queijo prato': 'queijo', 'queijo parmesao': 'parmesao',
+  'creme de leite fresco': 'creme de leite', 'nata': 'creme de leite',
+  'milho verde': 'milho', 'milho em conserva': 'milho',
+  'feijao carioca': 'feijao', 'feijao preto': 'feijao',
+  'arroz branco': 'arroz', 'arroz agulhinha': 'arroz',
+  'batata inglesa': 'batata', 'batata asterix': 'batata',
+  'cenoura ralada': 'cenoura',
+  'oleo de soja': 'oleo', 'oleo vegetal': 'oleo',
+  'azeite de oliva': 'azeite', 'azeite extra virgem': 'azeite',
+  'farinha': 'farinha de trigo',
+  'acucar cristal': 'acucar', 'acucar refinado': 'acucar',
+  'goma de tapioca': 'tapioca', 'polvilho hidratado': 'tapioca',
+  'molho de tomate': 'molho de tomate', 'extrato de tomate': 'molho de tomate',
+  'ovos': 'ovo', 'ovo de galinha': 'ovo',
+  'linguica calabresa': 'calabresa', 'calabresa defumada': 'calabresa',
+  'bacon em cubos': 'bacon',
+  'grao de bico': 'grao-de-bico',
+  'requeijao cremoso': 'requeijao',
+  'leite integral': 'leite', 'leite desnatado': 'leite',
+  'manteiga sem sal': 'manteiga', 'manteiga com sal': 'manteiga', 'margarina': 'manteiga'
+};
+function canonico(nome) {
+  const n = U.norm(nome);
+  return SINONIMOS[n] || n;
+}
+
+/* ============ CAMADA DE DADOS — IndexedDB ============ */
+const DB = (() => {
+  const NOME = 'chefprep', VERSAO = 1;
+  const STORES = ['receitas', 'estoque', 'plano', 'lista', 'config'];
+  let db = null;
+
+  function abrir() {
+    return new Promise((res, rej) => {
+      const req = indexedDB.open(NOME, VERSAO);
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        STORES.forEach(s => {
+          if (!d.objectStoreNames.contains(s)) d.createObjectStore(s, { keyPath: 'id' });
+        });
+      };
+      req.onsuccess = e => { db = e.target.result; res(db); };
+      req.onerror = () => rej(req.error);
+    });
+  }
+  function tx(store, modo, fn) {
+    return new Promise((res, rej) => {
+      const t = db.transaction(store, modo);
+      const r = fn(t.objectStore(store));
+      t.oncomplete = () => res(r && r._pronto ? r._resultado : true);
+      t.onerror = () => rej(t.error);
+      if (r && 'onsuccess' in r) {
+        r.onsuccess = () => { r._pronto = true; r._resultado = r.result; };
+      }
+    });
+  }
+  return {
+    abrir,
+    todos: (s) => tx(s, 'readonly', os => os.getAll()),
+    pegar: (s, id) => tx(s, 'readonly', os => os.get(id)),
+    salvar: (s, obj) => tx(s, 'readwrite', os => os.put(obj)),
+    remover: (s, id) => tx(s, 'readwrite', os => os.delete(id)),
+    limpar: (s) => tx(s, 'readwrite', os => os.clear())
+  };
+})();
+
+/* ============ BÁSICOS DA DESPENSA ============
+   Itens que ninguém cadastra com quantidade/validade mas "sempre tem".
+   O motor os trata como disponíveis — mata o falso-negativo do sal. */
+const LISTA_BASICOS = ['sal','óleo','azeite','açúcar','vinagre','alho','farinha de trigo',
+  'fermento','pimenta-do-reino','pimenta calabresa','orégano','louro','páprica','canela',
+  'noz-moscada','mostarda'];
+function ehBasico(nome) {
+  return (S.config.basicos || []).includes(canonico(nome));
+}
+
+/* ============ ESTADO EM MEMÓRIA ============ */
+const S = {
+  receitas: [], estoque: [], plano: [], lista: [],
+  config: { id: 'cfg', perfil: 'casual', diasAlertaValidade: 3,
+            basicos: ['sal', 'oleo', 'acucar'],
+            metas: { kcal: 2000, prot: 120, carb: 220, gord: 65 } },
+  tab: 'inicio',
+  filtroReceitas: { texto: '', cat: 'todas', soFavoritas: false, soPossiveis: false },
+  filtroEstoque: 'todos'
+};
+
+async function carregarTudo() {
+  [S.receitas, S.estoque, S.plano, S.lista] = await Promise.all(
+    ['receitas', 'estoque', 'plano', 'lista'].map(s => DB.todos(s)));
+  const cfg = await DB.pegar('config', 'cfg');
+  if (cfg) S.config = Object.assign(S.config, cfg);
+}
+
+/* ============ BANCO DE RECEITAS INICIAL (schema RecipeImporter) ============
+   Schema normalizado — a v2 (importador com IA) deve produzir este formato:
+   { id, nome, categoria, tags[], tempoMin, porcoesBase,
+     ingredientes: [{ nome, qtd, unidade, opcional, critico }],
+     passos[], equipamentos[], nutri: {kcal,prot,carb,gord} | null,
+     favorito, origem }
+   ========================================================================= */
+const RECEITAS_SEED = [
+{ nome:'Arroz branco soltinho', categoria:'Acompanhamento', tags:['básico','dia a dia'],
+  tempoMin:25, porcoesBase:4,
+  ingredientes:[
+    {nome:'arroz',qtd:2,unidade:'xíc',critico:true},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'oleo',qtd:1,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'},
+    {nome:'cebola',qtd:0.5,unidade:'un',opcional:true}],
+  passos:['Lave o arroz e escorra bem.','Refogue o alho (e a cebola, se usar) no óleo até dourar.','Adicione o arroz e frite por 1 minuto, mexendo.','Cubra com 4 xícaras de água fervente e o sal.','Cozinhe em fogo baixo, semi-tampado, até secar (±15 min).','Desligue, mantenha tampado 5 minutos e solte com um garfo.'],
+  equipamentos:['panela'], nutri:{kcal:205,prot:4,carb:44,gord:2} },
+
+{ nome:'Feijão de panela de pressão', categoria:'Acompanhamento', tags:['básico','congela bem'],
+  tempoMin:50, porcoesBase:6,
+  ingredientes:[
+    {nome:'feijao',qtd:500,unidade:'g',critico:true},
+    {nome:'alho',qtd:3,unidade:'dente'},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'oleo',qtd:2,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col sopa'},
+    {nome:'louro',qtd:2,unidade:'folha',opcional:true},
+    {nome:'calabresa',qtd:100,unidade:'g',opcional:true}],
+  passos:['Deixe o feijão de molho por 8h (opcional, reduz o tempo).','Cozinhe na pressão com água 3 dedos acima dos grãos e o louro (±25 min após pegar pressão).','Refogue alho e cebola no óleo (com calabresa, se usar).','Junte o refogado ao feijão cozido, acerte o sal.','Ferva destampado 10 min para engrossar o caldo.'],
+  equipamentos:['panela de pressão'], nutri:{kcal:190,prot:12,carb:32,gord:2} },
+
+{ nome:'Omelete de queijo', categoria:'Rápido', tags:['café','rápido','low carb'],
+  tempoMin:10, porcoesBase:1,
+  ingredientes:[
+    {nome:'ovo',qtd:3,unidade:'un',critico:true},
+    {nome:'queijo mussarela',qtd:50,unidade:'g'},
+    {nome:'manteiga',qtd:1,unidade:'col chá'},
+    {nome:'sal',qtd:1,unidade:'pitada'},
+    {nome:'cebolinha',qtd:1,unidade:'col sopa',opcional:true}],
+  passos:['Bata os ovos com sal (e cebolinha) até espumar de leve.','Aqueça a manteiga em frigideira antiaderente, fogo médio.','Despeje os ovos e mexa as bordas nos primeiros 20 segundos.','Quando quase firmar, adicione o queijo em uma metade.','Dobre ao meio e sirva ainda cremosa por dentro.'],
+  equipamentos:['frigideira'], nutri:{kcal:420,prot:29,carb:2,gord:33} },
+
+{ nome:'Macarrão alho e óleo', categoria:'Rápido', tags:['rápido','vegetariano','dia a dia'],
+  tempoMin:15, porcoesBase:2,
+  ingredientes:[
+    {nome:'macarrao',qtd:250,unidade:'g',critico:true},
+    {nome:'alho',qtd:6,unidade:'dente',critico:true},
+    {nome:'azeite',qtd:4,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col sopa'},
+    {nome:'pimenta calabresa',qtd:1,unidade:'col chá',opcional:true},
+    {nome:'parmesao',qtd:30,unidade:'g',opcional:true}],
+  passos:['Cozinhe o macarrão em água fervente bem salgada até al dente. Reserve 1 concha da água.','Doure o alho fatiado no azeite em fogo baixo — sem queimar.','Adicione a pimenta, o macarrão escorrido e a água reservada.','Misture 1 minuto no fogo até emulsionar. Finalize com parmesão.'],
+  equipamentos:['panela','frigideira'], nutri:{kcal:560,prot:15,carb:88,gord:18} },
+
+{ nome:'Strogonoff de frango', categoria:'Prato principal', tags:['clássico','família'],
+  tempoMin:35, porcoesBase:4,
+  ingredientes:[
+    {nome:'frango',qtd:600,unidade:'g',critico:true},
+    {nome:'creme de leite',qtd:200,unidade:'g',critico:true},
+    {nome:'molho de tomate',qtd:3,unidade:'col sopa'},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'champignon',qtd:100,unidade:'g',opcional:true},
+    {nome:'mostarda',qtd:1,unidade:'col sopa',opcional:true},
+    {nome:'oleo',qtd:2,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Corte o frango em cubos e tempere com sal.','Sele o frango no óleo em fogo alto até dourar. Reserve.','Na mesma panela, refogue cebola e alho.','Volte o frango, junte molho de tomate, mostarda e champignon. Cozinhe 5 min.','Desligue o fogo e misture o creme de leite. Não deixe ferver.','Sirva com arroz e batata palha.'],
+  equipamentos:['panela'], nutri:{kcal:380,prot:36,carb:9,gord:22} },
+
+{ nome:'Frango grelhado com limão', categoria:'Prato principal', tags:['fit','rápido','low carb'],
+  tempoMin:20, porcoesBase:2,
+  ingredientes:[
+    {nome:'frango',qtd:400,unidade:'g',critico:true},
+    {nome:'limao',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'azeite',qtd:1,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'},
+    {nome:'paprica',qtd:1,unidade:'col chá',opcional:true}],
+  passos:['Tempere os filés com sal, alho amassado, suco de limão e páprica. Deixe 10 min.','Aqueça bem a frigideira com o azeite.','Grelhe 4-5 min por lado sem mexer, até dourar.','Deixe descansar 3 minutos antes de servir.'],
+  equipamentos:['frigideira'], nutri:{kcal:290,prot:44,carb:2,gord:12} },
+
+{ nome:'Carne moída com legumes', categoria:'Prato principal', tags:['dia a dia','congela bem'],
+  tempoMin:30, porcoesBase:4,
+  ingredientes:[
+    {nome:'carne moida',qtd:500,unidade:'g',critico:true},
+    {nome:'cenoura',qtd:1,unidade:'un'},
+    {nome:'batata',qtd:2,unidade:'un'},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'molho de tomate',qtd:4,unidade:'col sopa'},
+    {nome:'oleo',qtd:1,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Refogue cebola e alho no óleo.','Junte a carne moída em fogo alto, quebrando os grumos, até dourar.','Adicione cenoura e batata em cubos pequenos e o molho de tomate.','Cubra com 1 xícara de água, acerte o sal e cozinhe tampado até os legumes amaciarem (±15 min).'],
+  equipamentos:['panela'], nutri:{kcal:340,prot:28,carb:18,gord:17} },
+
+{ nome:'Escondidinho de carne com mandioca', categoria:'Prato principal', tags:['conforto','forno','congela bem'],
+  tempoMin:60, porcoesBase:6,
+  ingredientes:[
+    {nome:'mandioca',qtd:1,unidade:'kg',critico:true},
+    {nome:'carne moida',qtd:500,unidade:'g',critico:true},
+    {nome:'queijo mussarela',qtd:150,unidade:'g'},
+    {nome:'manteiga',qtd:2,unidade:'col sopa'},
+    {nome:'leite',qtd:100,unidade:'ml'},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'molho de tomate',qtd:3,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col sopa'}],
+  passos:['Cozinhe a mandioca até desmanchar. Amasse com manteiga, leite e sal até virar purê.','Refogue cebola, alho e a carne moída; junte o molho de tomate.','Monte no refratário: metade do purê, a carne, o resto do purê.','Cubra com mussarela e leve ao forno 200°C por 20 min até gratinar.'],
+  equipamentos:['panela','forno','refratário'], nutri:{kcal:430,prot:24,carb:42,gord:19} },
+
+{ nome:'Farofa de manteiga', categoria:'Acompanhamento', tags:['rápido','churrasco'],
+  tempoMin:10, porcoesBase:4,
+  ingredientes:[
+    {nome:'farinha de mandioca',qtd:2,unidade:'xíc',critico:true},
+    {nome:'manteiga',qtd:3,unidade:'col sopa'},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'ovo',qtd:2,unidade:'un',opcional:true},
+    {nome:'bacon',qtd:100,unidade:'g',opcional:true},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Doure a cebola (e o bacon, se usar) na manteiga.','Se usar ovos, mexa-os na panela até firmar.','Baixe o fogo, junte a farinha aos poucos, mexendo sempre.','Toste 3-4 minutos até dourar. Acerte o sal.'],
+  equipamentos:['frigideira'], nutri:{kcal:310,prot:4,carb:42,gord:14} },
+
+{ nome:'Bolo de cenoura com cobertura', categoria:'Doce', tags:['café','clássico','forno'],
+  tempoMin:60, porcoesBase:10,
+  ingredientes:[
+    {nome:'cenoura',qtd:3,unidade:'un',critico:true},
+    {nome:'ovo',qtd:3,unidade:'un',critico:true},
+    {nome:'farinha de trigo',qtd:2,unidade:'xíc',critico:true},
+    {nome:'acucar',qtd:1.5,unidade:'xíc'},
+    {nome:'oleo',qtd:0.75,unidade:'xíc'},
+    {nome:'fermento',qtd:1,unidade:'col sopa'},
+    {nome:'chocolate em po',qtd:4,unidade:'col sopa'},
+    {nome:'leite',qtd:4,unidade:'col sopa'},
+    {nome:'manteiga',qtd:1,unidade:'col sopa'}],
+  passos:['Bata no liquidificador: cenouras picadas, ovos e óleo.','Na tigela, misture com açúcar e farinha; por último o fermento.','Asse em forma untada, 180°C por 40 min (teste do palito).','Cobertura: ferva chocolate, leite, manteiga e 2 col. de açúcar até engrossar.','Despeje sobre o bolo ainda morno.'],
+  equipamentos:['liquidificador','forno','forma'], nutri:{kcal:360,prot:5,carb:52,gord:15} },
+
+{ nome:'Purê de batata cremoso', categoria:'Acompanhamento', tags:['conforto','dia a dia'],
+  tempoMin:30, porcoesBase:4,
+  ingredientes:[
+    {nome:'batata',qtd:800,unidade:'g',critico:true},
+    {nome:'leite',qtd:150,unidade:'ml'},
+    {nome:'manteiga',qtd:2,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'},
+    {nome:'noz moscada',qtd:1,unidade:'pitada',opcional:true}],
+  passos:['Cozinhe as batatas descascadas em água salgada até desmanchar.','Escorra e amasse ainda quentes.','Volte à panela em fogo baixo com manteiga e leite aos poucos.','Mexa até ficar cremoso. Acerte sal e noz-moscada.'],
+  equipamentos:['panela'], nutri:{kcal:210,prot:4,carb:36,gord:6} },
+
+{ nome:'Vinagrete', categoria:'Acompanhamento', tags:['churrasco','sem fogo','vegano'],
+  tempoMin:10, porcoesBase:6,
+  ingredientes:[
+    {nome:'tomate',qtd:3,unidade:'un',critico:true},
+    {nome:'cebola',qtd:1,unidade:'un',critico:true},
+    {nome:'pimentao',qtd:1,unidade:'un',opcional:true},
+    {nome:'salsinha',qtd:3,unidade:'col sopa'},
+    {nome:'vinagre',qtd:3,unidade:'col sopa'},
+    {nome:'azeite',qtd:3,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Pique tomate, cebola e pimentão em cubos pequenos.','Misture com salsinha, vinagre, azeite e sal.','Deixe descansar 15 minutos na geladeira antes de servir.'],
+  equipamentos:[], nutri:{kcal:70,prot:1,carb:5,gord:6} },
+
+{ nome:'Tapioca de queijo', categoria:'Rápido', tags:['café','rápido','sem glúten'],
+  tempoMin:8, porcoesBase:1,
+  ingredientes:[
+    {nome:'tapioca',qtd:4,unidade:'col sopa',critico:true},
+    {nome:'queijo mussarela',qtd:60,unidade:'g'},
+    {nome:'manteiga',qtd:1,unidade:'col chá',opcional:true}],
+  passos:['Aqueça uma frigideira antiaderente em fogo médio.','Espalhe a goma peneirada cobrindo o fundo. Espere 2 min até firmar.','Vire, adicione o queijo em uma metade e dobre.','Sirva quando o queijo derreter. Passe manteiga por cima se quiser.'],
+  equipamentos:['frigideira'], nutri:{kcal:290,prot:12,carb:38,gord:10} },
+
+{ nome:'Panqueca de carne moída', categoria:'Prato principal', tags:['família','congela bem'],
+  tempoMin:50, porcoesBase:4,
+  ingredientes:[
+    {nome:'farinha de trigo',qtd:1,unidade:'xíc',critico:true},
+    {nome:'leite',qtd:1,unidade:'xíc',critico:true},
+    {nome:'ovo',qtd:1,unidade:'un',critico:true},
+    {nome:'carne moida',qtd:400,unidade:'g',critico:true},
+    {nome:'molho de tomate',qtd:1,unidade:'xíc'},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'queijo mussarela',qtd:100,unidade:'g',opcional:true},
+    {nome:'oleo',qtd:2,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Massa: bata farinha, leite, ovo, 1 col. de óleo e uma pitada de sal no liquidificador.','Faça discos finos em frigideira untada, dourando os dois lados.','Recheio: refogue cebola, alho e a carne; junte metade do molho.','Recheie, enrole e disponha no refratário.','Cubra com o resto do molho e o queijo; forno 200°C por 15 min.'],
+  equipamentos:['liquidificador','frigideira','forno'], nutri:{kcal:420,prot:27,carb:32,gord:20} }
+];
+
+/* ============ ENGINES DETERMINÍSTICOS ============ */
+
+/* --- Índice do estoque por nome canônico --- */
+function indiceEstoque() {
+  const idx = {};
+  for (const it of S.estoque) {
+    const c = canonico(it.nome);
+    if (!idx[c]) idx[c] = [];
+    idx[c].push(it);
+  }
+  return idx;
+}
+
+/* --- SuggestionProvider (contrato fixo — a v2 com IA implementa a mesma interface)
+   entrada:  { receitas, estoque, opcoes }
+   saída:    [{ receita, score, tem[], faltam[], faltaCritico, badge, usaVencendo }] --- */
+const SuggestionProvider = {
+  nome: 'deterministico-v1',
+  sugerir({ receitas, opcoes = {} } = {}) {
+    const idx = indiceEstoque();
+    const diasAlerta = S.config.diasAlertaValidade;
+    const res = [];
+    for (const r of receitas) {
+      const obrig = r.ingredientes.filter(i => !i.opcional);
+      if (!obrig.length) continue;
+      const tem = [], faltam = [];
+      let usaVencendo = false, faltaCritico = false;
+      for (const ing of obrig) {
+        const c = canonico(ing.nome);
+        if (ehBasico(c)) { tem.push(ing); continue; } // básico: sempre disponível
+        if (idx[c] && idx[c].some(e => e.qtd > 0)) {
+          tem.push(ing);
+          if (idx[c].some(e => {
+            const d = U.diasAte(e.validade);
+            return d !== null && d >= 0 && d <= diasAlerta;
+          })) usaVencendo = true;
+        } else {
+          faltam.push(ing);
+          if (ing.critico) faltaCritico = true;
+        }
+      }
+      let score = tem.length / obrig.length;
+      if (usaVencendo) score += 0.15;          // prioriza reduzir desperdício
+      if (r.favorito) score += 0.10;
+      if (faltaCritico) score -= 0.30;         // proteína/base ausente pesa mais
+      let badge = null;
+      if (!faltam.length) badge = 'ok';
+      else if (faltam.length === 1) badge = 'um';
+      else if (tem.length / obrig.length >= 0.7) badge = 'quase';
+      res.push({ receita: r, score, tem, faltam, faltaCritico, badge, usaVencendo });
+    }
+    res.sort((a, b) => b.score - a.score);
+    return opcoes.limite ? res.slice(0, opcoes.limite) : res;
+  }
+};
+
+/* --- Motor de Busca: texto + sinônimos + filtros --- */
+function buscarReceitas() {
+  const f = S.filtroReceitas;
+  const termo = U.norm(f.texto);
+  const termoCan = canonico(f.texto);
+  let out = S.receitas.filter(r => {
+    if (f.cat !== 'todas' && r.categoria !== f.cat) return false;
+    if (f.soFavoritas && !r.favorito) return false;
+    if (!termo) return true;
+    const alvo = U.norm(r.nome + ' ' + r.categoria + ' ' + (r.tags || []).join(' '));
+    if (alvo.includes(termo)) return true;
+    // busca por ingrediente, com expansão de sinônimo
+    return r.ingredientes.some(i => {
+      const c = canonico(i.nome);
+      return c.includes(termo) || c === termoCan || U.norm(i.nome).includes(termo);
+    });
+  });
+  if (f.soPossiveis) {
+    const ok = new Set(SuggestionProvider.sugerir({ receitas: out })
+      .filter(s => s.badge === 'ok').map(s => s.receita.id));
+    out = out.filter(r => ok.has(r.id));
+  }
+  return out;
+}
+
+/* --- Gerador de lista de compras: diff(receita − estoque) --- */
+function itensFaltantes(receita, porcoes) {
+  const idx = indiceEstoque();
+  const fator = porcoes / receita.porcoesBase;
+  return receita.ingredientes
+    .filter(i => !i.opcional)
+    .filter(i => !ehBasico(i.nome))
+    .filter(i => !(idx[canonico(i.nome)] || []).some(e => e.qtd > 0))
+    .map(i => ({ nome: i.nome, qtd: Math.round(i.qtd * fator * 100) / 100, unidade: i.unidade }));
+}
+function addNaLista(itens, origem) {
+  let n = 0;
+  for (const it of itens) {
+    const c = canonico(it.nome);
+    const jaTem = S.lista.find(l => !l.comprado && canonico(l.nome) === c);
+    if (jaTem) continue;
+    const novo = { id: U.id(), nome: it.nome, qtd: it.qtd || null,
+                   unidade: it.unidade || '', comprado: false, origem: origem || 'manual' };
+    S.lista.push(novo); DB.salvar('lista', novo); n++;
+  }
+  return n;
+}
+
+/* --- Baixa de estoque ao cozinhar (best-effort: só quando a unidade bate) --- */
+function darBaixa(receita, porcoes) {
+  const idx = indiceEstoque();
+  const fator = porcoes / receita.porcoesBase;
+  let baixados = 0;
+  for (const ing of receita.ingredientes.filter(i => !i.opcional)) {
+    const itens = idx[canonico(ing.nome)] || [];
+    // consome primeiro o que vence antes
+    itens.sort((a, b) => (a.validade || '9999') < (b.validade || '9999') ? -1 : 1);
+    let precisa = ing.qtd * fator;
+    for (const e of itens) {
+      if (precisa <= 0) break;
+      if (U.norm(e.unidade) !== U.norm(ing.unidade)) continue; // unidade diferente: não arrisca
+      const usa = Math.min(e.qtd, precisa);
+      e.qtd = Math.round((e.qtd - usa) * 100) / 100;
+      precisa -= usa; baixados++;
+      if (e.qtd <= 0) { DB.remover('estoque', e.id); S.estoque = S.estoque.filter(x => x.id !== e.id); }
+      else DB.salvar('estoque', e);
+    }
+  }
+  return baixados;
+}
+
+/* --- Itens do estoque vencendo --- */
+function vencendo() {
+  return S.estoque.filter(e => {
+    const d = U.diasAte(e.validade);
+    return d !== null && d <= S.config.diasAlertaValidade;
+  }).sort((a, b) => (a.validade || '') < (b.validade || '') ? -1 : 1);
+}
+
+/* ============ UI ============ */
+const UI = {
+  ir(tab) {
+    S.tab = tab;
+    document.querySelectorAll('.nav-item').forEach(b =>
+      b.classList.toggle('ativo', b.dataset.tab === tab));
+    UI.render();
+    window.scrollTo(0, 0);
+  },
+  render() {
+    const t = document.getElementById('tela');
+    t.innerHTML = ({ inicio: UI.vInicio, receitas: UI.vReceitas, estoque: UI.vEstoque,
+                     plano: UI.vPlano, lista: UI.vLista }[S.tab])();
+  },
+  toast(msg) {
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    const el = document.createElement('div');
+    el.className = 'toast'; el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2400);
+  },
+  fecharOverlay() {
+    document.getElementById('overlays').innerHTML = '';
+    UI.soltarWakeLock(); // timer, se houver, continua rodando e avisa ao fim
+  },
+  folha(titulo, corpoHTML) {
+    document.getElementById('overlays').innerHTML =
+      `<div class="overlay" onclick="if(event.target===this)UI.fecharOverlay()">
+        <div class="folha" role="dialog" aria-label="${U.esc(titulo)}">
+          <div class="folha-topo"><h2>${U.esc(titulo)}</h2>
+            <button class="btn-fechar" onclick="UI.fecharOverlay()" aria-label="Fechar">✕</button></div>
+          ${corpoHTML}
+        </div></div>`;
+  },
+
+  /* ---------- INÍCIO ---------- */
+  vInicio() {
+    const sug = SuggestionProvider.sugerir({ receitas: S.receitas });
+    const prontas = sug.filter(s => s.badge === 'ok');
+    const faltaUm = sug.filter(s => s.badge === 'um').slice(0, 3);
+    const venc = vencendo();
+    let h = `<div class="hero">
+      <div class="pergunta">O que dá pra fazer hoje?</div>
+      <div class="numerao">${prontas.length} receita${prontas.length === 1 ? '' : 's'}</div>
+      <div class="resposta">${prontas.length
+        ? 'prontas para ir ao fogo com o que você já tem.'
+        : S.estoque.length ? 'completas por enquanto — veja abaixo o que falta pouco.' : 'Cadastre seu estoque para eu cruzar com as receitas.'}</div>
+    </div>`;
+    if (venc.length) {
+      h += `<div class="alerta-validade">⏳ <b>${venc.length} ite${venc.length === 1 ? 'm precisa' : 'ns precisam'} de atenção:</b>
+        ${venc.slice(0, 4).map(e => {
+          const d = U.diasAte(e.validade);
+          return U.esc(e.nome) + (d < 0 ? ' (vencido)' : d === 0 ? ' (hoje!)' : ` (${d}d)`);
+        }).join(', ')}.
+        As sugestões abaixo já priorizam usá-los.</div>`;
+    }
+    if (prontas.length) {
+      h += `<div class="secao-rotulo">Pode fazer agora</div>`;
+      h += prontas.slice(0, 4).map(s => UI.cardSugestao(s)).join('');
+    }
+    if (faltaUm.length) {
+      h += `<div class="secao-rotulo">Falta só 1 item</div>`;
+      h += faltaUm.map(s => UI.cardSugestao(s)).join('');
+    }
+    if (!prontas.length && !faltaUm.length && S.estoque.length) {
+      h += `<div class="vazio" style="margin-top:16px"><b>Nenhum cruzamento ainda</b>
+        Adicione mais itens ao estoque ou cadastre novas receitas.</div>`;
+    }
+    h += `<div class="secao-rotulo">Atalhos</div>
+      <div class="atalhos">
+        <button class="atalho" onclick="UI.formEstoque()"><span>🧊</span>Adicionar ao estoque</button>
+        <button class="atalho" onclick="UI.formReceita()"><span>📖</span>Nova receita</button>
+        <button class="atalho" onclick="UI.ir('plano')"><span>📅</span>Planejar semana</button>
+        <button class="atalho" onclick="UI.ir('lista')"><span>🛒</span>Lista de compras</button>
+      </div>`;
+    return h;
+  },
+  cardSugestao(s) {
+    const r = s.receita;
+    const cls = s.badge === 'ok' ? 'pronta' : 'quase';
+    const badges = { ok: '<span class="badge ok">Pode fazer agora</span>',
+      um: '<span class="badge um">Falta 1 item</span>',
+      quase: '<span class="badge quase">Quase lá</span>' };
+    const obrig = s.tem.length + s.faltam.length;
+    let h = `<div class="card ${cls}">
+      <div class="card-topo"><div>
+        <h3>${U.esc(r.nome)}</h3>
+        <div class="meta">${U.esc(r.categoria)} · ⏱ ${r.tempoMin} min · ${r.porcoesBase} porções${s.usaVencendo ? ' · <span class="badge venc">usa item vencendo</span>' : ''}</div>
+      </div>${badges[s.badge] || ''}</div>
+      <div class="placar" aria-label="${s.tem.length} de ${obrig} ingredientes disponíveis">
+        ${s.tem.map(() => '<i class="pt tem"></i>').join('')}${s.faltam.map(() => '<i class="pt falta"></i>').join('')}
+      </div>`;
+    if (s.faltam.length)
+      h += `<div class="placar-legenda">Falta: <b>${s.faltam.map(i => U.esc(i.nome)).join(', ')}</b></div>`;
+    h += `<div class="card-acoes">
+      <button class="btn btn-mini btn-primario" onclick="UI.detalheReceita('${r.id}')">Ver receita</button>`;
+    if (s.faltam.length)
+      h += `<button class="btn btn-mini btn-contorno" onclick="UI.faltantesPraLista('${r.id}')">+ Faltantes na lista</button>`;
+    h += `</div></div>`;
+    return h;
+  },
+  faltantesPraLista(id) {
+    const r = S.receitas.find(x => x.id === id);
+    const n = addNaLista(itensFaltantes(r, r.porcoesBase), 'receita: ' + r.nome);
+    UI.toast(n ? `${n} ite${n === 1 ? 'm' : 'ns'} na lista de compras` : 'Itens já estavam na lista');
+    UI.render();
+  },
+
+  /* ---------- RECEITAS ---------- */
+  vReceitas() {
+    const f = S.filtroReceitas;
+    const cats = ['todas', ...new Set(S.receitas.map(r => r.categoria))];
+    UI._cats = cats; // referência por índice: nome de categoria nunca entra em string de código
+    if (!cats.includes(f.cat)) f.cat = 'todas'; // filtro órfão (categoria removida)
+    const lista = buscarReceitas();
+    const sugMap = {};
+    SuggestionProvider.sugerir({ receitas: lista }).forEach(s => sugMap[s.receita.id] = s);
+    let h = `<div class="barra-busca">
+      <input type="search" placeholder="Buscar por nome ou ingrediente…" value="${U.esc(f.texto)}"
+        oninput="S.filtroReceitas.texto=this.value;UI.renderSoLista()" aria-label="Buscar receitas">
+      <button class="btn btn-primario" onclick="UI.formReceita()">＋</button>
+    </div>
+    <div class="chips">
+      ${cats.map((c, i) => `<button class="chip ${f.cat === c ? 'ativo' : ''}"
+        onclick="S.filtroReceitas.cat=UI._cats[${i}];UI.render()">${c === 'todas' ? 'Todas' : U.esc(c)}</button>`).join('')}
+      <button class="chip ${f.soFavoritas ? 'ativo' : ''}"
+        onclick="S.filtroReceitas.soFavoritas=!S.filtroReceitas.soFavoritas;UI.render()">★ Favoritas</button>
+      <button class="chip ${f.soPossiveis ? 'ativo' : ''}"
+        onclick="S.filtroReceitas.soPossiveis=!S.filtroReceitas.soPossiveis;UI.render()">✓ Posso fazer</button>
+    </div>
+    <div id="lista-receitas">${UI.htmlListaReceitas(lista, sugMap)}</div>`;
+    return h;
+  },
+  renderSoLista() {
+    const lista = buscarReceitas();
+    const sugMap = {};
+    SuggestionProvider.sugerir({ receitas: lista }).forEach(s => sugMap[s.receita.id] = s);
+    const el = document.getElementById('lista-receitas');
+    if (el) el.innerHTML = UI.htmlListaReceitas(lista, sugMap);
+  },
+  htmlListaReceitas(lista, sugMap) {
+    if (!lista.length) return `<div class="vazio"><b>Nada encontrado</b>
+      Tente outro termo — a busca também procura por ingrediente (ex.: "frango", "macaxeira").</div>`;
+    return lista.map(r => {
+      const s = sugMap[r.id];
+      return `<div class="card ${s && s.badge === 'ok' ? 'pronta' : ''}">
+        <div class="card-topo"><div>
+          <h3>${U.esc(r.nome)}</h3>
+          <div class="meta">${U.esc(r.categoria)} · ⏱ ${r.tempoMin} min · ${r.porcoesBase} porções</div>
+        </div>
+        <button class="btn-fav" onclick="UI.toggleFav('${r.id}')" aria-label="Favoritar">${r.favorito ? '★' : '☆'}</button></div>
+        ${s && s.badge === 'ok' ? '<div style="margin-top:6px"><span class="badge ok">Pode fazer agora</span></div>' : ''}
+        <div class="card-acoes">
+          <button class="btn btn-mini btn-primario" onclick="UI.detalheReceita('${r.id}')">Abrir</button>
+        </div></div>`;
+    }).join('');
+  },
+  toggleFav(id) {
+    const r = S.receitas.find(x => x.id === id);
+    r.favorito = !r.favorito; DB.salvar('receitas', r); UI.render();
+  },
+
+  /* ---------- DETALHE + ESCALONAMENTO ---------- */
+  detalheReceita(id, porcoes) {
+    const r = S.receitas.find(x => x.id === id);
+    if (!r) return;
+    const p = porcoes || r.porcoesBase;
+    const fator = p / r.porcoesBase;
+    const idx = indiceEstoque();
+    const ingHTML = r.ingredientes.map(i => {
+      const temEstoque = (idx[canonico(i.nome)] || []).some(e => e.qtd > 0);
+      const basico = !temEstoque && ehBasico(i.nome);
+      return `<div class="ing-linha ${temEstoque || basico || i.opcional ? '' : 'sem'}">
+        <i class="pt ${temEstoque ? 'tem' : basico ? 'bas' : (i.opcional ? 'opc' : 'falta')}"
+           title="${basico ? 'básico da despensa' : ''}"></i>
+        <span>${U.esc(i.nome)}${i.opcional ? ' <small style="color:var(--cinza)">(opcional)</small>' : basico ? ' <small style="color:#5B84C4">(básico)</small>' : ''}</span>
+        <span class="qtd-ing">${U.fmtQtd(i.qtd * fator)} ${U.esc(i.unidade)}</span></div>`;
+    }).join('');
+    const passosHTML = r.passos.map((pp, i) =>
+      `<div class="passo"><div class="n">${i + 1}</div><div>${U.esc(pp)}</div></div>`).join('');
+    const nutri = r.nutri ? `<div class="dica" style="margin-top:10px">Por porção: ${r.nutri.kcal} kcal · P ${r.nutri.prot}g · C ${r.nutri.carb}g · G ${r.nutri.gord}g</div>` : '';
+    const faltam = itensFaltantes(r, p);
+    UI.folha(r.nome, `
+      <div class="det-cab">
+        <div class="det-meta"><span>${U.esc(r.categoria)}</span><span>⏱ ${r.tempoMin} min</span>
+          ${(r.equipamentos || []).length ? '<span>🍳 ' + r.equipamentos.map(U.esc).join(', ') + '</span>' : ''}</div>
+        ${(r.tags || []).length ? '<div class="det-meta">' + r.tags.map(t => '<span class="badge quase">' + U.esc(t) + '</span>').join('') + '</div>' : ''}
+      </div>
+      <div class="porcoes-ctl">
+        <span class="rotulo">Porções</span>
+        <button class="stepper" onclick="UI.detalheReceita('${r.id}',${Math.max(1, p - 1)})">−</button>
+        <span class="num">${p}</span>
+        <button class="stepper" onclick="UI.detalheReceita('${r.id}',${p + 1})">＋</button>
+      </div>
+      <div class="secao-rotulo">Ingredientes</div>${ingHTML}${nutri}
+      <div class="secao-rotulo">Modo de preparo</div>${passosHTML}
+      <div class="card-acoes" style="margin-top:18px">
+        <button class="btn btn-verde" onclick="UI.modoCozinhando('${r.id}',${p})">🔥 Cozinhar passo a passo</button>
+        ${faltam.length ? `<button class="btn btn-contorno" onclick="UI.faltantesPraLista('${r.id}');UI.fecharOverlay()">+ Faltantes na lista</button>` : ''}
+        <button class="btn btn-contorno" onclick="UI.addAoPlano('${r.id}')">📅 Planejar</button>
+      </div>
+      <div class="card-acoes">
+        <button class="btn btn-mini btn-contorno" onclick="UI.formReceita('${r.id}')">Editar</button>
+        <button class="btn btn-mini btn-perigo" onclick="UI.removerReceita('${r.id}')">Excluir</button>
+      </div>`);
+  },
+  removerReceita(id) {
+    if (!confirm('Excluir esta receita?')) return;
+    S.receitas = S.receitas.filter(r => r.id !== id);
+    DB.remover('receitas', id); UI.fecharOverlay(); UI.render();
+  },
+
+  /* ---------- MODO COZINHANDO ---------- */
+  modoCozinhando(id, porcoes, passo = 0) {
+    const r = S.receitas.find(x => x.id === id);
+    const total = r.passos.length;
+    const fim = passo >= total;
+    UI.ativarWakeLock(); // tela não apaga com a mão na massa
+    const seg = fim ? null : UI.detectarTempo(r.passos[passo]);
+    const timerAtivo = !!UI._timerInt;
+    document.getElementById('overlays').innerHTML = `
+      <div class="cozinhando">
+        <div class="coz-topo"><span>${U.esc(r.nome)}</span>
+          <span style="display:flex;gap:10px;align-items:center">
+            ${timerAtivo ? `<button id="coz-timer" class="coz-timer" onclick="UI.cancelarTimer()" title="Tocar para cancelar">⏱ …</button>` : ''}
+            <button onclick="UI.fecharOverlay()" style="color:#fff;font-size:15px" aria-label="Sair">✕ Sair</button>
+          </span></div>
+        <div class="coz-progresso">${r.passos.map((_, i) =>
+          `<i class="${i < passo || fim ? 'feito' : ''}"></i>`).join('')}</div>
+        <div class="coz-corpo">
+          ${fim
+            ? `<div class="coz-num">Pronto!</div>
+               <div class="coz-texto">Receita finalizada. Bom apetite! 🍽<br><br>
+               <span style="font-size:15px;opacity:.85">Quer dar baixa dos ingredientes usados no estoque?</span></div>`
+            : `<div class="coz-num">Passo ${passo + 1} de ${total}</div>
+               <div class="coz-texto">${U.esc(r.passos[passo])}</div>
+               ${seg ? `<button class="btn-timer"
+                 onclick="UI.iniciarTimer(${seg},'Passo ${passo + 1} — ${U.esc(r.nome)}');UI.modoCozinhando('${r.id}',${porcoes},${passo})">⏱ Cronometrar ${UI.fmtTempo(seg).replace(/^0?(\d+):00$/, '$1 min')}</button>` : ''}`}
+        </div>
+        <div class="coz-nav">
+          ${fim
+            ? `<button class="btn btn-volta" onclick="UI.fecharOverlay()">Agora não</button>
+               <button class="btn btn-avanca" onclick="UI.baixaEstoque('${r.id}',${porcoes})">Dar baixa ✓</button>`
+            : `<button class="btn btn-volta" ${passo === 0 ? 'disabled style="opacity:.4"' : ''}
+                 onclick="UI.modoCozinhando('${r.id}',${porcoes},${passo - 1})">← Voltar</button>
+               <button class="btn btn-avanca" onclick="UI.modoCozinhando('${r.id}',${porcoes},${passo + 1})">
+                 ${passo === total - 1 ? 'Finalizar ✓' : 'Próximo →'}</button>`}
+        </div>
+      </div>`;
+    if (timerAtivo) UI._tickTimer();
+  },
+  baixaEstoque(id, porcoes) {
+    const r = S.receitas.find(x => x.id === id);
+    const n = darBaixa(r, porcoes);
+    UI.fecharOverlay();
+    UI.toast(n ? 'Estoque atualizado ✓' : 'Nada para baixar (unidades diferentes)');
+    UI.render();
+  },
+
+  /* ---------- ESTOQUE ---------- */
+  vEstoque() {
+    const locais = ['todos', 'geladeira', 'freezer', 'despensa'];
+    const rot = { todos: 'Tudo', geladeira: '🧊 Gelad.', freezer: '❄️ Freezer', despensa: '🥫 Desp.' };
+    let itens = S.estoque.slice().sort((a, b) =>
+      (a.validade || '9999') < (b.validade || '9999') ? -1 : 1);
+    if (S.filtroEstoque !== 'todos') itens = itens.filter(e => e.local === S.filtroEstoque);
+    let h = `<div class="abas-local">${locais.map(l =>
+      `<button class="aba-local ${S.filtroEstoque === l ? 'ativo' : ''}"
+        onclick="S.filtroEstoque='${l}';UI.render()">${rot[l]}</button>`).join('')}</div>
+      <button class="btn btn-primario" style="width:100%;justify-content:center;margin-bottom:14px"
+        onclick="UI.formEstoque()">＋ Adicionar item</button>`;
+    if (!itens.length) {
+      h += `<div class="vazio"><b>Estoque vazio${S.filtroEstoque !== 'todos' ? ' aqui' : ''}</b>
+        Adicione o que tem em casa — é o cruzamento com as receitas que faz o app funcionar.</div>`;
+      return h;
+    }
+    h += itens.map(e => {
+      const d = U.diasAte(e.validade);
+      const cls = d !== null && d < 0 ? 'vencido' : (d !== null && d <= S.config.diasAlertaValidade ? 'vencendo' : '');
+      const val = e.validade
+        ? (d < 0 ? `<span style="color:var(--borda-rim);font-weight:700">vencido há ${-d}d</span>`
+          : d === 0 ? `<span style="color:var(--borda-rim);font-weight:700">vence hoje</span>`
+          : d <= S.config.diasAlertaValidade ? `<span style="color:var(--mostarda);font-weight:700">vence em ${d}d</span>`
+          : `val. ${e.validade.split('-').reverse().join('/')}`)
+        : '';
+      return `<div class="item-estoque ${cls}">
+        <div class="item-info"><b>${U.esc(e.nome)}</b>
+          <small>${{geladeira:'🧊 Geladeira',freezer:'❄️ Freezer',despensa:'🥫 Despensa'}[e.local] || ''} ${val ? '· ' + val : ''}</small></div>
+        <div class="item-qtd">
+          <button class="stepper" onclick="UI.mudaQtd('${e.id}',-1)">−</button>
+          <span class="valor">${U.fmtQtd(e.qtd)} ${U.esc(e.unidade)}</span>
+          <button class="stepper" onclick="UI.mudaQtd('${e.id}',1)">＋</button>
+        </div>
+        <button class="btn-fav" style="color:var(--cinza)" onclick="UI.removerEstoque('${e.id}')" aria-label="Remover">🗑</button>
+      </div>`;
+    }).join('');
+    return h;
+  },
+  mudaQtd(id, delta) {
+    const e = S.estoque.find(x => x.id === id);
+    const passo = ['g', 'ml'].includes(U.norm(e.unidade)) ? 50 : (['kg', 'l'].includes(U.norm(e.unidade)) ? 0.5 : 1);
+    e.qtd = Math.max(0, Math.round((e.qtd + delta * passo) * 100) / 100);
+    if (e.qtd === 0) {
+      // acabou → oferece repor
+      if (confirm(`"${e.nome}" acabou. Adicionar à lista de compras?`))
+        addNaLista([{ nome: e.nome, qtd: null, unidade: e.unidade }], 'reposição');
+      S.estoque = S.estoque.filter(x => x.id !== id);
+      DB.remover('estoque', id);
+    } else DB.salvar('estoque', e);
+    UI.render();
+  },
+  removerEstoque(id) {
+    S.estoque = S.estoque.filter(x => x.id !== id);
+    DB.remover('estoque', id); UI.render();
+  },
+  formEstoque() {
+    UI.folha('Adicionar ao estoque', `
+      <div class="campo"><label>Item</label>
+        <input id="fe-nome" placeholder="Ex.: frango, tomate, macaxeira…" autocomplete="off"></div>
+      <div class="linha-3">
+        <div class="campo"><label>Local</label>
+          <select id="fe-local"><option value="geladeira">Geladeira</option>
+            <option value="freezer">Freezer</option><option value="despensa">Despensa</option></select></div>
+        <div class="campo"><label>Qtd</label><input id="fe-qtd" type="number" step="any" value="1" inputmode="decimal"></div>
+        <div class="campo"><label>Unidade</label>
+          <select id="fe-un"><option>un</option><option>g</option><option>kg</option>
+            <option>ml</option><option>l</option><option>xíc</option><option>col sopa</option>
+            <option>col chá</option><option>dente</option><option>pacote</option><option>lata</option></select></div>
+      </div>
+      <div class="campo"><label>Validade (opcional)</label><input id="fe-val" type="date">
+        <div class="dica">Itens com validade próxima puxam receitas que os usam para o topo das sugestões.</div></div>
+      <button class="btn btn-primario" style="width:100%;justify-content:center"
+        onclick="UI.salvarEstoque()">Salvar no estoque</button>`);
+    setTimeout(() => document.getElementById('fe-nome').focus(), 100);
+  },
+  salvarEstoque() {
+    const nome = document.getElementById('fe-nome').value.trim();
+    if (!nome) { UI.toast('Dê um nome ao item'); return; }
+    const item = { id: U.id(), nome, local: document.getElementById('fe-local').value,
+      qtd: parseFloat(document.getElementById('fe-qtd').value) || 1,
+      unidade: document.getElementById('fe-un').value,
+      validade: document.getElementById('fe-val').value || null };
+    S.estoque.push(item); DB.salvar('estoque', item);
+    UI.fecharOverlay(); UI.toast(`"${nome}" no estoque ✓`); UI.render();
+  },
+
+  /* ---------- PLANO SEMANAL ---------- */
+  vPlano() {
+    const hoje = new Date();
+    const dias = [...Array(7)].map((_, i) => {
+      const d = new Date(hoje); d.setDate(hoje.getDate() + i);
+      return U.isoLocal(d);
+    });
+    const refs = ['Almoço', 'Jantar'];
+    const fitness = S.config.perfil === 'fitness';
+    let h = `<div class="secao-rotulo">Próximos 7 dias</div>`;
+    h += dias.map((iso, i) => {
+      const dt = new Date(iso + 'T12:00:00');
+      const entradas = S.plano.filter(p => p.data === iso);
+      let macros = null;
+      if (fitness) {
+        // nutri é por porção; a meta é individual → soma 1 porção por refeição
+        macros = { kcal: 0, prot: 0 };
+        entradas.forEach(p => {
+          const r = S.receitas.find(x => x.id === p.receitaId);
+          if (r && r.nutri) { macros.kcal += r.nutri.kcal; macros.prot += r.nutri.prot; }
+        });
+      }
+      return `<div class="dia-plano ${i === 0 ? 'hoje' : ''}">
+        <h4>${U.diaSemana[dt.getDay()]} · ${dt.getDate()}/${dt.getMonth() + 1}
+          ${i === 0 ? '<span class="hoje-tag">hoje</span>' : ''}</h4>
+        ${refs.map(ref => {
+          const p = entradas.find(e => e.refeicao === ref);
+          const r = p && S.receitas.find(x => x.id === p.receitaId);
+          return `<div class="refeicao"><span class="rotulo-ref">${ref}</span>
+            ${r ? `<span class="nome-rec">${U.esc(r.nome)} <small style="color:var(--cinza)">(${p.porcoes}p)</small></span>
+              <button class="btn-fav" style="color:var(--cinza);font-size:15px" onclick="UI.tirarDoPlano('${p.id}')">✕</button>`
+              : `<button class="vago" style="text-align:left;background:none" onclick="UI.escolherReceitaPlano('${iso}','${ref}')">+ escolher receita</button>`}
+          </div>`;
+        }).join('')}
+        ${macros && (macros.kcal > 0) ? `<div class="macro-dia">Planejado (por pessoa): ~${Math.round(macros.kcal)} kcal · ${Math.round(macros.prot)}g proteína (meta: ${S.config.metas.kcal} kcal / ${S.config.metas.prot}g)</div>` : ''}
+      </div>`;
+    }).join('');
+    h += `<button class="btn btn-verde" style="width:100%;justify-content:center;margin-top:8px"
+      onclick="UI.gerarListaDaSemana()">🛒 Gerar lista de compras da semana</button>
+      <div class="dica" style="text-align:center;margin-top:8px">Compara os ingredientes planejados com seu estoque e adiciona só o que falta.</div>`;
+    return h;
+  },
+  escolherReceitaPlano(data, refeicao) {
+    UI.folha(`${refeicao} · ${data.split('-').reverse().slice(0, 2).join('/')}`,
+      S.receitas.map(r => `<div class="card" style="padding:11px 13px;margin-bottom:8px">
+        <div class="card-topo"><div><h3 style="font-size:15px">${U.esc(r.nome)}</h3>
+          <div class="meta">⏱ ${r.tempoMin} min</div></div>
+        <button class="btn btn-mini btn-primario"
+          onclick="UI.confirmarPlano('${data}','${refeicao}','${r.id}')">Escolher</button></div></div>`).join('')
+      || '<div class="vazio"><b>Sem receitas</b>Cadastre receitas primeiro.</div>');
+  },
+  confirmarPlano(data, refeicao, receitaId) {
+    const r = S.receitas.find(x => x.id === receitaId);
+    const p = { id: U.id(), data, refeicao, receitaId, porcoes: r.porcoesBase };
+    S.plano.push(p); DB.salvar('plano', p);
+    UI.fecharOverlay(); UI.render();
+  },
+  tirarDoPlano(id) {
+    S.plano = S.plano.filter(p => p.id !== id);
+    DB.remover('plano', id); UI.render();
+  },
+  addAoPlano(receitaId) {
+    UI.fecharOverlay();
+    UI.ir('plano');
+    UI.toast('Toque em "+ escolher receita" no dia desejado');
+  },
+  gerarListaDaSemana() {
+    let todos = [];
+    for (const p of S.plano) {
+      if (p.data < U.hojeISO()) continue;
+      const r = S.receitas.find(x => x.id === p.receitaId);
+      if (r) todos = todos.concat(itensFaltantes(r, p.porcoes));
+    }
+    if (!todos.length) { UI.toast('Nada faltando — estoque cobre o plano ✓'); return; }
+    const n = addNaLista(todos, 'plano semanal');
+    UI.toast(`${n} ite${n === 1 ? 'm' : 'ns'} adicionado${n === 1 ? '' : 's'} à lista`);
+    UI.ir('lista');
+  },
+
+  /* ---------- LISTA DE COMPRAS ---------- */
+  vLista() {
+    const pend = S.lista.filter(l => !l.comprado);
+    const feitos = S.lista.filter(l => l.comprado);
+    let h = `<div class="barra-busca">
+      <input id="li-novo" placeholder="Adicionar item…" autocomplete="off"
+        onkeydown="if(event.key==='Enter')UI.addListaManual()">
+      <button class="btn btn-primario" onclick="UI.addListaManual()">＋</button>
+    </div>`;
+    if (!S.lista.length)
+      return h + `<div class="vazio"><b>Lista vazia</b>
+        Itens entram por aqui, pelas receitas ("+ Faltantes") ou pelo plano semanal.</div>`;
+    const linha = l => `<div class="item-lista ${l.comprado ? 'comprado' : ''}">
+      <button class="check" onclick="UI.toggleComprado('${l.id}')" aria-label="Marcar">${l.comprado ? '✓' : ''}</button>
+      <div class="nome">${U.esc(l.nome)}
+        ${l.qtd ? `<small> · ${U.fmtQtd(l.qtd)} ${U.esc(l.unidade)}</small>` : ''}
+        ${l.origem && l.origem !== 'manual' ? `<br><small>${U.esc(l.origem)}</small>` : ''}</div>
+      <button class="btn-fav" style="color:var(--cinza);font-size:16px" onclick="UI.removerLista('${l.id}')">🗑</button>
+    </div>`;
+    if (pend.length) h += `<div class="secao-rotulo">A comprar (${pend.length})</div>
+      <button class="btn btn-mini btn-contorno" style="margin:-2px 0 10px"
+        onclick="UI.compartilharLista()">\u{1F4E4} Compartilhar lista</button>` + pend.map(linha).join('');
+    if (feitos.length) {
+      h += `<div class="secao-rotulo">No carrinho (${feitos.length})</div>` + feitos.map(linha).join('');
+      h += `<button class="btn btn-verde" style="width:100%;justify-content:center;margin-top:10px"
+        onclick="UI.compradosProEstoque()">🧊 Mover comprados para o estoque</button>
+        <div class="dica" style="text-align:center;margin-top:6px">Pergunta o local de cada item e fecha o ciclo compra → estoque.</div>`;
+    }
+    return h;
+  },
+  addListaManual() {
+    const inp = document.getElementById('li-novo');
+    const nome = inp.value.trim();
+    if (!nome) return;
+    addNaLista([{ nome }], 'manual');
+    inp.value = ''; UI.render();
+    setTimeout(() => { const i = document.getElementById('li-novo'); if (i) i.focus(); }, 50);
+  },
+  toggleComprado(id) {
+    const l = S.lista.find(x => x.id === id);
+    l.comprado = !l.comprado; DB.salvar('lista', l); UI.render();
+  },
+  removerLista(id) {
+    S.lista = S.lista.filter(l => l.id !== id);
+    DB.remover('lista', id); UI.render();
+  },
+  compradosProEstoque() {
+    const feitos = S.lista.filter(l => l.comprado);
+    const local = prompt('Local padrão para os itens? (geladeira / freezer / despensa)', 'despensa');
+    if (!local) return;
+    const loc = ['geladeira', 'freezer', 'despensa'].includes(U.norm(local)) ? U.norm(local) : 'despensa';
+    for (const l of feitos) {
+      const item = { id: U.id(), nome: l.nome, local: loc,
+        qtd: l.qtd || 1, unidade: l.unidade || 'un', validade: null };
+      S.estoque.push(item); DB.salvar('estoque', item);
+      S.lista = S.lista.filter(x => x.id !== l.id); DB.remover('lista', l.id);
+    }
+    UI.toast(`${feitos.length} ite${feitos.length === 1 ? 'm' : 'ns'} no estoque ✓`);
+    UI.render();
+  },
+
+  /* ---------- FORM DE RECEITA (cadastro manual = RecipeImporter v1) ---------- */
+  formReceita(id) {
+    const r = id ? S.receitas.find(x => x.id === id) : null;
+    const ingTxt = r ? r.ingredientes.map(i => {
+      const marca = (i.critico ? ' *' : '') + (i.opcional ? ' (opcional)' : '');
+      return i.unidade === 'a gosto'
+        ? `${i.nome} a gosto${marca}`
+        : `${U.fmtQtd(i.qtd)} ${i.unidade} ${i.nome}${marca}`;
+    }).join('\n') : '';
+    UI.folha(r ? 'Editar receita' : 'Nova receita', `
+      <div class="campo"><label>Nome</label><input id="fr-nome" value="${r ? U.esc(r.nome) : ''}"></div>
+      <div class="linha-3">
+        <div class="campo"><label>Categoria</label>
+          <select id="fr-cat">${['Prato principal','Acompanhamento','Rápido','Doce','Salada','Sopa','Molho/Tempero','Conserva']
+            .map(c => `<option ${r && r.categoria === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+        <div class="campo"><label>Tempo (min)</label><input id="fr-tempo" type="number" value="${r ? r.tempoMin : 30}" inputmode="numeric"></div>
+        <div class="campo"><label>Porções</label><input id="fr-porc" type="number" value="${r ? r.porcoesBase : 4}" inputmode="numeric"></div>
+      </div>
+      <div class="campo"><label>Ingredientes (um por linha)</label>
+        <textarea id="fr-ing" placeholder="2 xíc arroz *&#10;3 dente alho&#10;1 un cebola (opcional)">${U.esc(ingTxt)}</textarea>
+        <div class="dica">Formato: <b>quantidade unidade nome</b>. Marque com <b>*</b> os ingredientes essenciais (proteína, base) e com <b>(opcional)</b> os dispensáveis.</div></div>
+      <div class="campo"><label>Modo de preparo (um passo por linha)</label>
+        <textarea id="fr-passos">${r ? U.esc(r.passos.join('\n')) : ''}</textarea></div>
+      <div class="campo"><label>Tags (separadas por vírgula)</label>
+        <input id="fr-tags" value="${r ? U.esc((r.tags || []).join(', ')) : ''}" placeholder="rápido, congela bem, fit"></div>
+      ${S.config.perfil === 'fitness' ? `
+      <div class="campo"><label>Nutrição por porção (opcional)</label>
+        <div class="linha-3" style="grid-template-columns:repeat(4,1fr)">
+          <input id="fr-kcal" type="number" placeholder="kcal" value="${r && r.nutri ? r.nutri.kcal : ''}">
+          <input id="fr-prot" type="number" placeholder="prot g" value="${r && r.nutri ? r.nutri.prot : ''}">
+          <input id="fr-carb" type="number" placeholder="carb g" value="${r && r.nutri ? r.nutri.carb : ''}">
+          <input id="fr-gord" type="number" placeholder="gord g" value="${r && r.nutri ? r.nutri.gord : ''}">
+        </div></div>` : ''}
+      <button class="btn btn-primario" style="width:100%;justify-content:center"
+        onclick="UI.salvarReceita('${r ? r.id : ''}')">Salvar receita</button>`);
+  },
+  parseIngrediente(linha) {
+    // "2 xíc arroz *" | "0,5 un cebola (opcional)" | "3 col sopa azeite" | "sal a gosto"
+    linha = linha.trim();
+    if (!linha) return null;
+    const opcional = /\(opcional\)/i.test(linha);
+    const critico = /\*\s*$/.test(linha.replace(/\(opcional\)/i, ''));
+    linha = linha.replace(/\(opcional\)/i, '').replace(/\*\s*$/, '').trim();
+    if (/\ba gosto\s*$/i.test(linha)) {
+      const nome = linha.replace(/\ba gosto\s*$/i, '').trim();
+      if (nome) return { nome, qtd: 1, unidade: 'a gosto', opcional: true, critico };
+    }
+    const m = linha.match(/^([\d.,]+)\s+(.+)$/);
+    if (m) {
+      const qtd = parseFloat(m[1].replace(',', '.'));
+      let resto = m[2].trim(), unidade = null;
+      // unidades de duas+ palavras têm prioridade sobre o corte na 1ª palavra
+      const compostas = ['colher de sopa', 'colher de chá', 'col sopa', 'col chá'];
+      for (const u of compostas) {
+        if (U.norm(resto).startsWith(U.norm(u) + ' ')) {
+          unidade = resto.slice(0, u.length);
+          resto = resto.slice(u.length).trim();
+          break;
+        }
+      }
+      if (!unidade) {
+        const sp = resto.indexOf(' ');
+        if (sp > 0) { unidade = resto.slice(0, sp); resto = resto.slice(sp + 1).trim(); }
+      }
+      if (unidade && resto) return { nome: resto, qtd, unidade, opcional, critico };
+    }
+    return { nome: linha, qtd: 1, unidade: 'a gosto', opcional: true, critico: false };
+  },
+  salvarReceita(id) {
+    const nome = document.getElementById('fr-nome').value.trim();
+    if (!nome) { UI.toast('Dê um nome à receita'); return; }
+    const ingredientes = document.getElementById('fr-ing').value.split('\n')
+      .map(UI.parseIngrediente).filter(Boolean);
+    const passos = document.getElementById('fr-passos').value.split('\n')
+      .map(s => s.trim()).filter(Boolean);
+    if (!ingredientes.length || !passos.length) { UI.toast('Preencha ingredientes e passos'); return; }
+    let nutri = null;
+    const k = document.getElementById('fr-kcal');
+    if (k && k.value) nutri = {
+      kcal: +k.value || 0, prot: +document.getElementById('fr-prot').value || 0,
+      carb: +document.getElementById('fr-carb').value || 0, gord: +document.getElementById('fr-gord').value || 0 };
+    const ant = id ? S.receitas.find(x => x.id === id) : null;
+    const r = { id: id || U.id(), nome,
+      categoria: document.getElementById('fr-cat').value,
+      tempoMin: +document.getElementById('fr-tempo').value || 30,
+      porcoesBase: +document.getElementById('fr-porc').value || 4,
+      ingredientes, passos,
+      tags: document.getElementById('fr-tags').value.split(',').map(s => s.trim()).filter(Boolean),
+      equipamentos: ant ? ant.equipamentos : [],
+      nutri: nutri || (ant ? ant.nutri : null),
+      favorito: ant ? ant.favorito : false, origem: 'manual' };
+    if (ant) Object.assign(ant, r); else S.receitas.push(r);
+    DB.salvar('receitas', r);
+    UI.fecharOverlay(); UI.toast('Receita salva ✓'); UI.render();
+  },
+
+  /* ---------- CONFIGURAÇÕES ---------- */
+  abrirConfig() {
+    const c = S.config;
+    const perfis = [
+      { id: 'casual', nome: 'Casual', desc: 'Buscar receitas e favoritar. O essencial, sem fricção.' },
+      { id: 'organizador', nome: 'Organizador', desc: 'Estoque, plano semanal e lista de compras em destaque.' },
+      { id: 'fitness', nome: 'Fitness', desc: 'Tudo do Organizador + macros nas receitas e metas no plano.' }];
+    UI.folha('Configurações', `
+      <div class="secao-rotulo" style="margin-top:4px">Perfil de uso</div>
+      <div class="perfil-opcoes">${perfis.map(p =>
+        `<button class="perfil-op ${c.perfil === p.id ? 'ativo' : ''}" onclick="UI.setPerfil('${p.id}')">
+          <span class="radio"></span><span><b>${p.nome}</b><small>${p.desc}</small></span></button>`).join('')}</div>
+      <div class="secao-rotulo">Alertas</div>
+      <div class="campo"><label>Avisar validade com quantos dias de antecedência?</label>
+        <input id="cf-dias" type="number" value="${c.diasAlertaValidade}" inputmode="numeric"
+          onchange="S.config.diasAlertaValidade=Math.max(0,+this.value||3);DB.salvar('config',S.config)"></div>
+      <div class="secao-rotulo">Básicos da despensa</div>
+      <div class="dica" style="margin:-2px 0 10px">Itens que você <b>sempre tem</b> em casa. O motor considera disponíveis sem precisar cadastrar no estoque, e eles nunca entram na lista de compras.</div>
+      <div class="chips" style="flex-wrap:wrap">${UI.htmlChipsBasicos(c)}</div>
+      <div class="barra-busca" style="margin-top:4px">
+        <input id="cf-bas" placeholder="Adicionar outro básico…"
+          onkeydown="if(event.key==='Enter')UI.addBasico()">
+        <button class="btn btn-contorno" onclick="UI.addBasico()">＋</button>
+      </div>
+      ${c.perfil === 'fitness' ? `
+      <div class="secao-rotulo">Metas diárias</div>
+      <div class="linha-2">
+        <div class="campo"><label>Calorias (kcal)</label>
+          <input type="number" value="${c.metas.kcal}" onchange="S.config.metas.kcal=+this.value||2000;DB.salvar('config',S.config)"></div>
+        <div class="campo"><label>Proteína (g)</label>
+          <input type="number" value="${c.metas.prot}" onchange="S.config.metas.prot=+this.value||120;DB.salvar('config',S.config)"></div>
+      </div>` : ''}
+      <div class="secao-rotulo">Seus dados</div>
+      <div class="card-acoes" style="margin-top:2px">
+        <button class="btn btn-contorno" onclick="UI.exportarJSON()">⬇️ Exportar backup</button>
+        <button class="btn btn-contorno" onclick="document.getElementById('cf-imp').click()">⬆️ Importar</button>
+        <input id="cf-imp" type="file" accept=".json" class="escondido" onchange="UI.importarJSON(this)">
+      </div>
+      <div class="dica" style="margin-top:8px">Tudo fica salvo apenas neste dispositivo (IndexedDB). O backup é um arquivo JSON seu — leve para onde quiser.</div>
+      <div class="secao-rotulo">Sobre</div>
+      <div class="dica">ChefPrep v1.1 · offline-first · PWA instalável<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
+  },
+  setPerfil(p) {
+    S.config.perfil = p; DB.salvar('config', S.config);
+    UI.abrirConfig(); UI.render();
+  },
+  htmlChipsBasicos(c) {
+    const ativos = c.basicos || [];
+    // curados + personalizados que o usuário adicionou
+    const todos = [...new Set([...LISTA_BASICOS.map(canonico), ...ativos])];
+    UI._bas = todos;
+    return todos.map((b, i) => {
+      const rotulo = LISTA_BASICOS.find(l => canonico(l) === b) || b;
+      return `<button class="chip ${ativos.includes(b) ? 'ativo' : ''}"
+        onclick="UI.toggleBasico(${i})">${U.esc(rotulo)}</button>`;
+    }).join('');
+  },
+  toggleBasico(i) {
+    const b = UI._bas[i];
+    const arr = S.config.basicos || (S.config.basicos = []);
+    const pos = arr.indexOf(b);
+    if (pos >= 0) arr.splice(pos, 1); else arr.push(b);
+    DB.salvar('config', S.config);
+    UI.abrirConfig(); UI.render();
+  },
+  addBasico() {
+    const inp = document.getElementById('cf-bas');
+    const c = canonico(inp.value);
+    if (!c) return;
+    const arr = S.config.basicos || (S.config.basicos = []);
+    if (!arr.includes(c)) { arr.push(c); DB.salvar('config', S.config); }
+    UI.abrirConfig(); UI.render();
+  },
+
+  /* ---------- COMPARTILHAR LISTA ---------- */
+  compartilharLista() {
+    const pend = S.lista.filter(l => !l.comprado);
+    if (!pend.length) { UI.toast('Nada pendente na lista'); return; }
+    const txt = '🛒 Lista de compras — ChefPrep\n' + pend.map(l =>
+      '• ' + l.nome + (l.qtd ? ` (${U.fmtQtd(l.qtd)} ${l.unidade})` : '')).join('\n');
+    if (navigator.share) {
+      navigator.share({ title: 'Lista de compras', text: txt }).catch(() => {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(txt)
+        .then(() => UI.toast('Lista copiada ✓'))
+        .catch(() => UI.toast('Não foi possível copiar'));
+    }
+  },
+
+  /* ---------- WAKE LOCK (tela acesa cozinhando) ---------- */
+  async ativarWakeLock() {
+    if (!('wakeLock' in navigator) || UI._wake) return;
+    try { UI._wake = await navigator.wakeLock.request('screen'); } catch (e) {}
+  },
+  soltarWakeLock() {
+    if (UI._wake) { UI._wake.release().catch(() => {}); UI._wake = null; }
+  },
+
+  /* ---------- TIMER DE PASSO ---------- */
+  detectarTempo(txt) {
+    let m = txt.match(/(\d+)\s*(?:a|–|-)\s*(\d+)\s*min/i);      // "4-5 min" → usa o maior
+    if (m) return Math.max(+m[1], +m[2]) * 60;
+    m = txt.match(/(\d+)\s*(?:min|minutos?)\b/i);
+    if (m) return +m[1] * 60;
+    m = txt.match(/(\d+)\s*(?:h|horas?)\b/i);
+    if (m) return +m[1] * 3600;
+    return null;
+  },
+  fmtTempo(s) {
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    return h ? `${h}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`
+             : `${m}:${String(ss).padStart(2, '0')}`;
+  },
+  iniciarTimer(seg, rotulo) {
+    clearInterval(UI._timerInt);
+    UI._timerFim = Date.now() + seg * 1000;
+    UI._timerRot = rotulo;
+    UI._timerInt = setInterval(UI._tickTimer, 500);
+    UI._tickTimer();
+  },
+  _tickTimer() {
+    const el = document.getElementById('coz-timer');
+    const resta = Math.ceil((UI._timerFim - Date.now()) / 1000);
+    if (resta <= 0) {
+      clearInterval(UI._timerInt); UI._timerInt = null;
+      if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+      UI.toast('⏰ ' + (UI._timerRot || 'Tempo!'));
+      if (el) { el.textContent = '⏰ Tempo!'; el.classList.add('fim'); }
+      return;
+    }
+    if (el) el.textContent = '⏱ ' + UI.fmtTempo(resta);
+  },
+  cancelarTimer() {
+    clearInterval(UI._timerInt); UI._timerInt = null;
+    const el = document.getElementById('coz-timer');
+    if (el) el.remove();
+  },
+
+  exportarJSON() {
+    const dump = { versao: 1, exportadoEm: new Date().toISOString(),
+      receitas: S.receitas, estoque: S.estoque, plano: S.plano, lista: S.lista, config: S.config };
+    const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `chefprep-backup-${U.hojeISO()}.json`;
+    a.click(); URL.revokeObjectURL(a.href);
+    UI.toast('Backup exportado ✓');
+  },
+  importarJSON(input) {
+    const f = input.files[0]; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const d = JSON.parse(reader.result);
+        if (!d.receitas || !Array.isArray(d.receitas)) throw new Error('formato');
+        if (!confirm('Importar vai substituir todos os dados atuais. Continuar?')) return;
+        for (const s of ['receitas', 'estoque', 'plano', 'lista']) {
+          await DB.limpar(s);
+          for (const item of (d[s] || [])) await DB.salvar(s, item);
+        }
+        if (d.config) { d.config.id = 'cfg'; await DB.salvar('config', d.config); }
+        await carregarTudo();
+        UI.fecharOverlay(); UI.toast('Dados importados ✓'); UI.render();
+      } catch (e) {
+        UI.toast('Arquivo inválido — use um backup do ChefPrep');
+      }
+    };
+    reader.readAsText(f);
+  }
+};
+
+/* ============ INICIALIZAÇÃO ============ */
+(async function init() {
+  try {
+    await DB.abrir();
+    await carregarTudo();
+    if (!S.receitas.length && !S.config.seeded) {
+      // primeira execução (e só ela): semeia o banco de receitas
+      for (const r of RECEITAS_SEED) {
+        const rec = Object.assign({ id: U.id(), favorito: false, origem: 'seed' }, r);
+        S.receitas.push(rec);
+        await DB.salvar('receitas', rec);
+      }
+      S.config.seeded = true;
+      await DB.salvar('config', S.config);
+    }
+    UI.render();
+    // PWA: service worker (só http/https; em file:// falha silenciosamente)
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+    // wake lock cai quando a aba perde foco — readquire se ainda cozinhando
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && document.querySelector('.cozinhando')) {
+        UI._wake = null; UI.ativarWakeLock();
+      }
+    });
+  } catch (e) {
+    document.getElementById('tela').innerHTML =
+      `<div class="vazio" style="margin-top:30px"><b>Não foi possível abrir o banco local</b>
+      Seu navegador bloqueou o IndexedDB (comum em aba anônima). Abra em uma aba normal e recarregue.</div>`;
+    console.error(e);
+  }
+})();
+</script>
+</body>
+</html>
