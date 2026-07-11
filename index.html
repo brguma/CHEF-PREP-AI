@@ -418,7 +418,12 @@ const SINONIMOS = {
   'azeitona verde': 'azeitona', 'azeitona preta': 'azeitona',
   'ervilha em conserva': 'ervilha', 'presunto magro': 'presunto',
   'cacau em po': 'cacau', 'ovos de codorna': 'ovo de codorna',
-  'mandioquinha salsa': 'mandioquinha', 'batata baroa': 'mandioquinha'
+  'mandioquinha salsa': 'mandioquinha', 'batata baroa': 'mandioquinha',
+  'carne seca': 'carne de sol', 'charque': 'carne de sol', 'jaba': 'carne de sol',
+  'polvilho doce': 'polvilho', 'polvilho azedo': 'polvilho',
+  'flocos de milho': 'flocao de milho', 'cuscuz de milho': 'flocao de milho', 'flocao': 'flocao de milho',
+  'pao frances': 'pao', 'pao de forma': 'pao', 'pao amanhecido': 'pao', 'paes': 'pao',
+  'leite condensado integral': 'leite condensado', 'queijo de coalho': 'queijo coalho'
 };
 function canonico(nome) {
   const n = U.norm(nome);
@@ -2606,14 +2611,502 @@ const RECEITAS_SEED = [
     {nome:'alho',qtd:3,unidade:'dente',opcional:true},
     {nome:'louro',qtd:2,unidade:'folha',opcional:true}],
   passos:['Dissolva o sal e o açúcar em 1 litro de água fria (essa proporção é a regra: 6% de sal).','Mergulhe o frango (até 1,5 kg) com alho e louro.','Geladeira: 2h para filés, 6h para peça inteira. NUNCA re-salgue depois.','Seque bem e asse ou grelhe: por osmose, a carne segura os sucos. O peito de frango seco morre aqui.'],
-  equipamentos:[], nutri:null }
+  equipamentos:[], nutri:null },
+/* ===== PACOTE v4 — Sopas (+6) ===== */
+{ nome:'Caldo verde brasileiro', categoria:'Sopa', tags:['conforto','clássico','congela bem'],
+  tempoMin:45, porcoesBase:5,
+  ingredientes:[
+    {nome:'batata',qtd:600,unidade:'g',critico:true},
+    {nome:'couve',qtd:1,unidade:'maço',critico:true},
+    {nome:'calabresa',qtd:200,unidade:'g'},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:3,unidade:'dente'},
+    {nome:'azeite',qtd:2,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col sopa'}],
+  passos:['Cozinhe as batatas com cebola, alho e sal em 1,2 litro de água por 20 min.','Bata tudo no liquidificador até virar um creme liso; volte à panela.','Doure a calabresa em rodelas no azeite e junte ao creme.','Adicione a couve em tiras finas e cozinhe por 3 min. Fio de azeite na tigela.'],
+  equipamentos:['panela','liquidificador'], nutri:{kcal:250,prot:10,carb:26,gord:12} },
+
+{ nome:'Creme de mandioquinha', categoria:'Sopa', tags:['conforto','congela bem'],
+  tempoMin:35, porcoesBase:4,
+  ingredientes:[
+    {nome:'mandioquinha',qtd:600,unidade:'g',critico:true},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'manteiga',qtd:1,unidade:'col sopa'},
+    {nome:'creme de leite',qtd:100,unidade:'g',opcional:true},
+    {nome:'sal',qtd:1,unidade:'col chá'},
+    {nome:'cebolinha',qtd:2,unidade:'col sopa',opcional:true}],
+  passos:['Refogue cebola e alho na manteiga.','Junte a mandioquinha em pedaços, sal e 1 litro de água; cozinhe por 20 min.','Bata no liquidificador até aveludar (creme de leite deixa de restaurante).','Cebolinha por cima. A sopa que abraça.'],
+  equipamentos:['panela','liquidificador'], nutri:{kcal:190,prot:3,carb:30,gord:7} },
+
+{ nome:'Creme de abóbora com gengibre', categoria:'Sopa', tags:['fit','conforto','vegano'],
+  tempoMin:35, porcoesBase:4,
+  ingredientes:[
+    {nome:'abobora',qtd:800,unidade:'g',critico:true},
+    {nome:'gengibre',qtd:1,unidade:'col chá'},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'azeite',qtd:2,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Refogue cebola, alho e o gengibre ralado no azeite por 2 min.','Junte a abóbora em cubos, sal e água até quase cobrir; cozinhe por 18 min.','Bata no liquidificador até ficar liso e brilhante.','O gengibre esquenta por dentro — sopa de noite fria com poucas calorias.'],
+  equipamentos:['panela','liquidificador'], nutri:{kcal:130,prot:2,carb:18,gord:7} },
+
+{ nome:'Sopa de feijão com macarrão', categoria:'Sopa', tags:['aproveitamento','barata','família'],
+  tempoMin:25, porcoesBase:4,
+  ingredientes:[
+    {nome:'feijao',qtd:3,unidade:'xíc',critico:true},
+    {nome:'macarrao',qtd:100,unidade:'g',critico:true},
+    {nome:'cenoura',qtd:1,unidade:'un',opcional:true},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'oleo',qtd:1,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'},
+    {nome:'cheiro-verde',qtd:2,unidade:'col sopa',opcional:true}],
+  passos:['Aproveite o feijão de ontem: bata metade dele com o caldo no liquidificador.','Doure o alho no óleo, volte o feijão batido e o inteiro; junte 2 xícaras de água.','Adicione o macarrão (ave-maria ou argolinha) e a cenoura em cubinhos; cozinhe por 10 min.','Cheiro-verde e mesa. O feijão de ontem virou o jantar de hoje.'],
+  equipamentos:['panela','liquidificador'], nutri:{kcal:240,prot:11,carb:40,gord:5} },
+
+{ nome:'Creme de milho', categoria:'Sopa', tags:['conforto','barata'],
+  tempoMin:25, porcoesBase:4,
+  ingredientes:[
+    {nome:'milho',qtd:2,unidade:'lata',critico:true},
+    {nome:'leite',qtd:400,unidade:'ml',critico:true},
+    {nome:'cebola',qtd:0.5,unidade:'un'},
+    {nome:'manteiga',qtd:1,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'},
+    {nome:'cebolinha',qtd:1,unidade:'col sopa',opcional:true}],
+  passos:['Bata o milho com o leite no liquidificador por 2 min.','Passe por peneira apertando bem (o bagaço fica).','Refogue a cebola na manteiga, junte o creme e o sal.','Mexa em fogo baixo por 8 min até engrossar. Cebolinha e pronto.'],
+  equipamentos:['liquidificador','panela'], nutri:{kcal:210,prot:7,carb:30,gord:8} },
+
+{ nome:'Sopa de tomate assado', categoria:'Sopa', tags:['diferente','vegano','forno'],
+  tempoMin:50, porcoesBase:4,
+  ingredientes:[
+    {nome:'tomate',qtd:8,unidade:'un',critico:true},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:4,unidade:'dente'},
+    {nome:'azeite',qtd:3,unidade:'col sopa'},
+    {nome:'oregano',qtd:1,unidade:'col chá'},
+    {nome:'acucar',qtd:1,unidade:'col chá'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Asse tomates em quartos, cebola e alho com azeite, sal e açúcar a 220°C por 30 min, até as bordas tostarem.','Bata tudo no liquidificador com 1 xícara de água quente.','Volte à panela com orégano por 5 min.','Assar antes de bater é o truque: o tomate carameliza e a sopa ganha profundidade.'],
+  equipamentos:['forno','liquidificador','panela'], nutri:{kcal:140,prot:3,carb:14,gord:9} },
+
+/* ===== PACOTE v4 — Doces (+8) ===== */
+{ nome:'Brigadeiro de panela', categoria:'Doce', tags:['doce','clássico','rápido'],
+  tempoMin:20, porcoesBase:6,
+  ingredientes:[
+    {nome:'leite condensado',qtd:1,unidade:'lata',critico:true},
+    {nome:'chocolate em po',qtd:3,unidade:'col sopa',critico:true},
+    {nome:'manteiga',qtd:1,unidade:'col sopa'},
+    {nome:'chocolate granulado',qtd:100,unidade:'g',opcional:true}],
+  passos:['Misture leite condensado, chocolate e manteiga na panela fria.','Fogo médio-baixo, mexendo SEM PARAR por 10 min.','Ponto: desgruda do fundo ao inclinar a panela. Para comer de colher, pare 2 min antes.','Enrolar: geladeira 1h, mãos untadas, granulado. Ou pule tudo e ataque de colher.'],
+  equipamentos:['panela'], nutri:{kcal:290,prot:5,carb:48,gord:9} },
+
+{ nome:'Pudim de leite condensado', categoria:'Doce', tags:['doce','clássico','forno'],
+  tempoMin:90, porcoesBase:8,
+  ingredientes:[
+    {nome:'leite condensado',qtd:1,unidade:'lata',critico:true},
+    {nome:'leite',qtd:400,unidade:'ml',critico:true},
+    {nome:'ovo',qtd:3,unidade:'un',critico:true},
+    {nome:'acucar',qtd:1,unidade:'xíc'}],
+  passos:['Calda: derreta o açúcar na forma de furo em fogo médio até dourar; espalhe pelas laterais.','Bata leite condensado, leite e ovos no liquidificador por 1 min.','Despeje na forma caramelizada; cubra com alumínio.','Banho-maria no forno a 180°C por 60 min. Esfrie, geladeira por 4h e desenforme com coragem.'],
+  equipamentos:['liquidificador','forno','forma'], nutri:{kcal:310,prot:8,carb:52,gord:8} },
+
+{ nome:'Mousse de limão', categoria:'Doce', tags:['doce','rápido','sem fogo'],
+  tempoMin:15, porcoesBase:6,
+  ingredientes:[
+    {nome:'leite condensado',qtd:1,unidade:'lata',critico:true},
+    {nome:'creme de leite',qtd:1,unidade:'lata',critico:true},
+    {nome:'limao',qtd:4,unidade:'un',critico:true}],
+  passos:['Bata leite condensado e creme de leite no liquidificador.','Com o motor ligado, adicione o suco dos limões aos poucos — a mistura engrossa na hora.','Despeje nas taças e gele por 2h.','Raspas de limão por cima. Três ingredientes, zero defeito.'],
+  equipamentos:['liquidificador'], nutri:{kcal:280,prot:5,carb:38,gord:12} },
+
+{ nome:'Arroz doce', categoria:'Doce', tags:['doce','clássico','aproveitamento'],
+  tempoMin:40, porcoesBase:6,
+  ingredientes:[
+    {nome:'arroz',qtd:1,unidade:'xíc',critico:true},
+    {nome:'leite',qtd:1,unidade:'l',critico:true},
+    {nome:'acucar',qtd:0.5,unidade:'xíc'},
+    {nome:'leite condensado',qtd:0.5,unidade:'lata',opcional:true},
+    {nome:'canela',qtd:1,unidade:'col chá'},
+    {nome:'cravo',qtd:3,unidade:'un',opcional:true}],
+  passos:['Cozinhe o arroz em 2 xícaras de água por 10 min, até quase secar.','Junte o leite, o açúcar e o cravo; fogo baixo por 20 min, mexendo às vezes.','Leite condensado no final deixa mais cremoso.','Canela polvilhada por cima. Quente ou gelado — a briga é justa dos dois lados.'],
+  equipamentos:['panela'], nutri:{kcal:260,prot:7,carb:48,gord:5} },
+
+{ nome:'Curau de milho', categoria:'Doce', tags:['doce','junina','clássico'],
+  tempoMin:30, porcoesBase:6,
+  ingredientes:[
+    {nome:'milho',qtd:2,unidade:'lata',critico:true},
+    {nome:'leite',qtd:500,unidade:'ml',critico:true},
+    {nome:'acucar',qtd:0.5,unidade:'xíc'},
+    {nome:'manteiga',qtd:1,unidade:'col sopa'},
+    {nome:'canela',qtd:1,unidade:'col chá'}],
+  passos:['Bata o milho com o leite no liquidificador por 2 min e passe por peneira, apertando bem.','Leve ao fogo com açúcar e manteiga.','Mexa por 15 min até engrossar e o fundo aparecer na colherada.','Taças, canela por cima, geladeira. Festa junina em qualquer mês.'],
+  equipamentos:['liquidificador','panela'], nutri:{kcal:230,prot:6,carb:40,gord:6} },
+
+{ nome:'Bolo de fubá', categoria:'Doce', tags:['doce','café','clássico'],
+  tempoMin:55, porcoesBase:10,
+  ingredientes:[
+    {nome:'fuba',qtd:1.5,unidade:'xíc',critico:true},
+    {nome:'farinha de trigo',qtd:0.5,unidade:'xíc'},
+    {nome:'ovo',qtd:3,unidade:'un',critico:true},
+    {nome:'leite',qtd:1,unidade:'xíc'},
+    {nome:'oleo',qtd:0.5,unidade:'xíc'},
+    {nome:'acucar',qtd:1.5,unidade:'xíc'},
+    {nome:'fermento',qtd:1,unidade:'col sopa'},
+    {nome:'erva-doce',qtd:1,unidade:'col chá',opcional:true}],
+  passos:['Bata no liquidificador: ovos, leite, óleo e açúcar.','Misture na tigela com fubá, farinha e erva-doce; fermento por último.','Forma untada, forno 180°C por 40 min (teste do palito).','Com café passado na hora, é a tarde perfeita.'],
+  equipamentos:['liquidificador','forno','forma'], nutri:{kcal:290,prot:5,carb:44,gord:11} },
+
+{ nome:'Bolo de laranja de liquidificador', categoria:'Doce', tags:['doce','café','rápido'],
+  tempoMin:50, porcoesBase:10,
+  ingredientes:[
+    {nome:'laranja',qtd:1,unidade:'un',critico:true},
+    {nome:'ovo',qtd:3,unidade:'un',critico:true},
+    {nome:'farinha de trigo',qtd:2,unidade:'xíc',critico:true},
+    {nome:'acucar',qtd:1.5,unidade:'xíc'},
+    {nome:'oleo',qtd:0.75,unidade:'xíc'},
+    {nome:'fermento',qtd:1,unidade:'col sopa'}],
+  passos:['Bata no liquidificador a laranja INTEIRA com casca (sem sementes), ovos, óleo e açúcar.','Misture com a farinha na tigela; fermento por último, sem bater.','Forno 180°C por 35 min em forma untada.','A casca dá o perfume que bolo de suco não alcança.'],
+  equipamentos:['liquidificador','forno','forma'], nutri:{kcal:300,prot:5,carb:46,gord:12} },
+
+{ nome:'Doce de banana de panela', categoria:'Doce', tags:['doce','aproveitamento','barata'],
+  tempoMin:30, porcoesBase:6,
+  ingredientes:[
+    {nome:'banana',qtd:6,unidade:'un',critico:true},
+    {nome:'acucar',qtd:0.5,unidade:'xíc'},
+    {nome:'limao',qtd:0.5,unidade:'un'},
+    {nome:'canela',qtd:1,unidade:'col chá'},
+    {nome:'cravo',qtd:3,unidade:'un',opcional:true}],
+  passos:['Use as bananas maduras demais da fruteira — quanto mais pintadas, melhor.','Panela: bananas em rodelas, açúcar, cravo e suco de limão.','Fogo baixo por 20 min, mexendo às vezes, até escurecer e encorpar.','Canela no final. Com queijo branco por cima, vira sobremesa de fazenda.'],
+  equipamentos:['panela'], nutri:{kcal:160,prot:1,carb:40,gord:0} },
+
+/* ===== PACOTE v4 — Boteco (+6) ===== */
+{ nome:'Caldinho de feijão', categoria:'Sopa', tags:['boteco','aproveitamento','rápido'],
+  tempoMin:20, porcoesBase:4,
+  ingredientes:[
+    {nome:'feijao',qtd:3,unidade:'xíc',critico:true},
+    {nome:'bacon',qtd:100,unidade:'g'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'cebolinha',qtd:2,unidade:'col sopa'},
+    {nome:'pimenta calabresa',qtd:1,unidade:'col chá',opcional:true},
+    {nome:'sal',qtd:1,unidade:'pitada'}],
+  passos:['Bata o feijão de ontem com o caldo no liquidificador até ficar liso.','Frite o bacon em cubos até crocante; doure o alho na gordura.','Junte o feijão batido e cozinhe por 8 min até encorpar.','Copinho, bacon e cebolinha por cima, pimenta para quem aguenta.'],
+  equipamentos:['liquidificador','panela'], nutri:{kcal:220,prot:11,carb:24,gord:9} },
+
+{ nome:'Bolinho de arroz', categoria:'Rápido', tags:['boteco','aproveitamento','família'],
+  tempoMin:30, porcoesBase:4,
+  ingredientes:[
+    {nome:'arroz',qtd:2,unidade:'xíc',critico:true},
+    {nome:'ovo',qtd:2,unidade:'un',critico:true},
+    {nome:'farinha de trigo',qtd:4,unidade:'col sopa'},
+    {nome:'queijo mussarela',qtd:80,unidade:'g',opcional:true},
+    {nome:'cebolinha',qtd:2,unidade:'col sopa'},
+    {nome:'oleo',qtd:2,unidade:'xíc'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Misture o arroz de ontem com ovos, farinha, queijo em cubinhos, cebolinha e sal.','A massa deve modelar sem escorrer — ajuste com farinha.','Frite colheradas em óleo quente por 3 min até dourar (ou airfryer 200°C por 12 min).','O arroz esquecido na panela virou o petisco da noite.'],
+  equipamentos:['frigideira'], nutri:{kcal:280,prot:9,carb:38,gord:10} },
+
+{ nome:'Dadinho de tapioca', categoria:'Rápido', tags:['boteco','festa','sem glúten'],
+  tempoMin:40, porcoesBase:6,
+  ingredientes:[
+    {nome:'tapioca',qtd:250,unidade:'g',critico:true},
+    {nome:'queijo coalho',qtd:250,unidade:'g',critico:true},
+    {nome:'leite',qtd:500,unidade:'ml',critico:true},
+    {nome:'sal',qtd:1,unidade:'col chá'},
+    {nome:'oleo',qtd:2,unidade:'xíc'}],
+  passos:['Ferva o leite com sal; desligue e misture a goma granulada e o queijo coalho ralado.','Mexa até virar uma massa homogênea; espalhe num refratário untado (2 cm de altura).','Geladeira por 3h até firmar; corte em cubos.','Frite por 3 min até dourar (ou airfryer 200°C por 15 min). Com melado ou geleia de pimenta: o hit dos bares, em casa.'],
+  equipamentos:['panela','refratário','frigideira'], nutri:{kcal:310,prot:11,carb:36,gord:14} },
+
+{ nome:'Batata frita crocante de verdade', categoria:'Acompanhamento', tags:['boteco','família','legumes'],
+  tempoMin:40, porcoesBase:4,
+  ingredientes:[
+    {nome:'batata',qtd:800,unidade:'g',critico:true},
+    {nome:'oleo',qtd:1,unidade:'l',critico:true},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Corte em palitos e deixe de molho em água fria por 15 min (sai o amido); seque MUITO bem.','Primeira fritura: óleo a 160°C por 5 min, sem dourar. Escorra e espere 10 min.','Segunda fritura: óleo a 190°C por 3 min até dourar.','Sal só no final. A dupla fritura é a diferença entre batata de casa e batata de bar.'],
+  equipamentos:['panela'], nutri:{kcal:320,prot:4,carb:42,gord:15} },
+
+{ nome:'Pão de alho de churrasco', categoria:'Acompanhamento', tags:['boteco','churrasco','forno'],
+  tempoMin:20, porcoesBase:6,
+  ingredientes:[
+    {nome:'pao',qtd:4,unidade:'un',critico:true},
+    {nome:'manteiga',qtd:100,unidade:'g',critico:true},
+    {nome:'alho',qtd:6,unidade:'dente',critico:true},
+    {nome:'maionese',qtd:2,unidade:'col sopa'},
+    {nome:'parmesao',qtd:3,unidade:'col sopa',opcional:true},
+    {nome:'salsinha',qtd:2,unidade:'col sopa'}],
+  passos:['Misture manteiga mole, maionese, alho amassado, parmesão e salsinha.','Corte os pães em fatias sem separar (efeito sanfona) e recheie os cortes com a pasta.','Embrulhe em alumínio: churrasqueira ou forno 200°C por 12 min.','Abra o papel e doure mais 3 min. Some antes da carne ficar pronta.'],
+  equipamentos:['forno'], nutri:{kcal:340,prot:7,carb:34,gord:20} },
+
+{ nome:'Caipirinha clássica', categoria:'Rápido', tags:['boteco','bebida','churrasco'],
+  tempoMin:5, porcoesBase:1,
+  ingredientes:[
+    {nome:'limao',qtd:1,unidade:'un',critico:true},
+    {nome:'cachaca',qtd:60,unidade:'ml',critico:true},
+    {nome:'acucar',qtd:2,unidade:'col chá'},
+    {nome:'gelo',qtd:1,unidade:'xíc'}],
+  passos:['Corte o limão em quartos, retire o miolo branco central (amarga).','Macere com o açúcar no copo — pressão firme, sem destruir a casca.','Complete com gelo e a cachaça; misture de baixo para cima.','A proporção é o segredo: 1 limão, 2 colheres, 1 dose. Beba com responsabilidade e churrasco.'],
+  equipamentos:['copo'], nutri:null },
+
+/* ===== PACOTE v4 — Massas (+5) ===== */
+{ nome:'Molho branco', categoria:'Molho/Tempero', tags:['massa','base'],
+  tempoMin:15, porcoesBase:4,
+  ingredientes:[
+    {nome:'leite',qtd:500,unidade:'ml',critico:true},
+    {nome:'farinha de trigo',qtd:2,unidade:'col sopa',critico:true},
+    {nome:'manteiga',qtd:2,unidade:'col sopa',critico:true},
+    {nome:'noz moscada',qtd:1,unidade:'pitada'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Derreta a manteiga e junte a farinha; mexa por 2 min sem deixar escurecer.','Adicione o leite FRIO aos poucos, batendo com fouet para não empelotar.','Mexa em fogo médio por 5 min até engrossar como mingau ralo.','Sal e noz-moscada. Base de lasanha, gratinados e macarrão cremoso.'],
+  equipamentos:['panela'], nutri:{kcal:130,prot:5,carb:10,gord:8} },
+
+{ nome:'Espaguete ao sugo', categoria:'Prato principal', tags:['massa','vegano','dia a dia'],
+  tempoMin:25, porcoesBase:3,
+  ingredientes:[
+    {nome:'macarrao',qtd:300,unidade:'g',critico:true},
+    {nome:'tomate',qtd:6,unidade:'un',critico:true},
+    {nome:'alho',qtd:3,unidade:'dente'},
+    {nome:'cebola',qtd:0.5,unidade:'un'},
+    {nome:'azeite',qtd:3,unidade:'col sopa'},
+    {nome:'manjericao',qtd:6,unidade:'folha',opcional:true},
+    {nome:'acucar',qtd:1,unidade:'pitada'},
+    {nome:'sal',qtd:1,unidade:'col sopa'}],
+  passos:['Sugo: refogue alho e cebola no azeite; junte os tomates picados sem pele, sal e a pitada de açúcar.','Amasse e cozinhe por 15 min até virar molho rústico.','Espaguete al dente por 9 min; termine 1 min dentro do molho com uma concha da água.','Manjericão rasgado na hora. Simples é difícil de fazer bem — este faz.'],
+  equipamentos:['panela'], nutri:{kcal:440,prot:12,carb:76,gord:12} },
+
+{ nome:'Macarrão cremoso de forno', categoria:'Prato principal', tags:['massa','família','conforto'],
+  tempoMin:45, porcoesBase:5,
+  ingredientes:[
+    {nome:'macarrao',qtd:400,unidade:'g',critico:true},
+    {nome:'leite',qtd:500,unidade:'ml',critico:true},
+    {nome:'farinha de trigo',qtd:2,unidade:'col sopa'},
+    {nome:'manteiga',qtd:2,unidade:'col sopa'},
+    {nome:'queijo mussarela',qtd:250,unidade:'g',critico:true},
+    {nome:'parmesao',qtd:3,unidade:'col sopa',opcional:true},
+    {nome:'sal',qtd:1,unidade:'col sopa'},
+    {nome:'noz moscada',qtd:1,unidade:'pitada'}],
+  passos:['Cozinhe o macarrão por 7 min — MENOS que al dente, ele termina no forno.','Faça o molho branco (manteiga, farinha, leite frio, sal, noz-moscada) e derreta metade da mussarela nele.','Misture massa e molho no refratário; cubra com o resto do queijo e o parmesão.','Forno 200°C por 15 min até gratinar. A crosta é patrimônio de quem serve.'],
+  equipamentos:['panela','forno','refratário'], nutri:{kcal:520,prot:22,carb:64,gord:20} },
+
+{ nome:'Nhoque de batata', categoria:'Prato principal', tags:['massa','família','congela bem'],
+  tempoMin:60, porcoesBase:4,
+  ingredientes:[
+    {nome:'batata',qtd:1,unidade:'kg',critico:true},
+    {nome:'farinha de trigo',qtd:1.5,unidade:'xíc',critico:true},
+    {nome:'ovo',qtd:1,unidade:'un'},
+    {nome:'molho de tomate',qtd:2,unidade:'xíc'},
+    {nome:'parmesao',qtd:3,unidade:'col sopa',opcional:true},
+    {nome:'sal',qtd:1,unidade:'col sopa'}],
+  passos:['Cozinhe as batatas com casca por 25 min; descasque e amasse ainda quentes. Espere amornar.','Misture ovo, sal e a farinha AOS POUCOS — só até desgrudar das mãos (farinha demais = nhoque de borracha).','Rolinhos, corte em gominhos e cozinhe em água fervente: subiu, está pronto (2 min).','Molho de tomate quente por cima e parmesão. Dia 29 garantido.'],
+  equipamentos:['panela'], nutri:{kcal:380,prot:10,carb:74,gord:5} },
+
+{ nome:'Macarrão com brócolis e alho', categoria:'Prato principal', tags:['massa','fit','aproveitamento','rápido'],
+  tempoMin:20, porcoesBase:3,
+  ingredientes:[
+    {nome:'macarrao',qtd:300,unidade:'g',critico:true},
+    {nome:'brocolis',qtd:1,unidade:'un',critico:true},
+    {nome:'alho',qtd:4,unidade:'dente'},
+    {nome:'azeite',qtd:3,unidade:'col sopa'},
+    {nome:'parmesao',qtd:2,unidade:'col sopa',opcional:true},
+    {nome:'sal',qtd:1,unidade:'col sopa'}],
+  passos:['Cozinhe o macarrão; nos últimos 3 min, jogue os floretes de brócolis na MESMA água.','Doure o alho fatiado no azeite.','Escorra (guarde 1 concha da água) e salteie tudo junto por 1 min.','Parmesão por cima. Uma panela só e o verde entrou na massa.'],
+  equipamentos:['panela','frigideira'], nutri:{kcal:450,prot:14,carb:72,gord:13} },
+
+/* ===== PACOTE v4 — Café e lanches (+6) ===== */
+{ nome:'Pão de queijo de liquidificador', categoria:'Rápido', tags:['café','sem glúten','família'],
+  tempoMin:40, porcoesBase:6,
+  ingredientes:[
+    {nome:'polvilho',qtd:2,unidade:'xíc',critico:true},
+    {nome:'queijo',qtd:150,unidade:'g',critico:true},
+    {nome:'leite',qtd:1,unidade:'xíc'},
+    {nome:'ovo',qtd:1,unidade:'un'},
+    {nome:'oleo',qtd:0.5,unidade:'xíc'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Bata tudo no liquidificador por 2 min — massa líquida mesmo.','Despeje em forminhas de mini muffin untadas (2/3 da altura).','Forno 180°C por 25 min sem abrir a porta, até crescer e dourar.','É a versão de liquidificador: casquinha por fora, puxa-puxa por dentro.'],
+  equipamentos:['liquidificador','forno','forma'], nutri:{kcal:290,prot:8,carb:34,gord:14} },
+
+{ nome:'Cuscuz nordestino', categoria:'Rápido', tags:['café','nordestina','sem glúten','barata'],
+  tempoMin:15, porcoesBase:2,
+  ingredientes:[
+    {nome:'flocao de milho',qtd:1,unidade:'xíc',critico:true},
+    {nome:'sal',qtd:1,unidade:'col chá'},
+    {nome:'manteiga',qtd:1,unidade:'col sopa'},
+    {nome:'queijo coalho',qtd:60,unidade:'g',opcional:true},
+    {nome:'ovo',qtd:2,unidade:'un',opcional:true}],
+  passos:['Misture o flocão com o sal e 3/4 de xícara de água; deixe hidratar por 10 min.','Cuscuzeira (ou peneira de metal sobre panela com água fervente): vapor por 8 min.','Desenforme e lambuze de manteiga.','Com ovo frito e queijo coalho: o café da manhã que sustenta até o almoço.'],
+  equipamentos:['panela'], nutri:{kcal:280,prot:8,carb:44,gord:9} },
+
+{ nome:'Ovos mexidos cremosos', categoria:'Rápido', tags:['café','rápido','low carb'],
+  tempoMin:8, porcoesBase:1,
+  ingredientes:[
+    {nome:'ovo',qtd:3,unidade:'un',critico:true},
+    {nome:'manteiga',qtd:1,unidade:'col sopa'},
+    {nome:'creme de leite',qtd:1,unidade:'col sopa',opcional:true},
+    {nome:'sal',qtd:1,unidade:'pitada'},
+    {nome:'cebolinha',qtd:1,unidade:'col sopa',opcional:true}],
+  passos:['Bata os ovos na tigela. NÃO salgue ainda.','Manteiga na frigideira em fogo BAIXO; ovos dentro, mexendo devagar e sem parar.','Tire do fogo 3 vezes durante o cozimento — cremoso se faz com paciência, não com calor.','Ainda úmidos: sal, creme de leite e cebolinha. Firmou demais, passou.'],
+  equipamentos:['frigideira'], nutri:{kcal:310,prot:19,carb:1,gord:26} },
+
+{ nome:'Vitamina de banana e aveia', categoria:'Rápido', tags:['café','fit','rápido'],
+  tempoMin:5, porcoesBase:1,
+  ingredientes:[
+    {nome:'banana',qtd:1,unidade:'un',critico:true},
+    {nome:'leite',qtd:300,unidade:'ml',critico:true},
+    {nome:'aveia',qtd:2,unidade:'col sopa'},
+    {nome:'mel',qtd:1,unidade:'col chá',opcional:true},
+    {nome:'canela',qtd:1,unidade:'pitada',opcional:true}],
+  passos:['Tudo no liquidificador por 1 min.','Banana congelada deixa com textura de milkshake.','Copo grande, canela por cima. Café da manhã em 5 minutos cronometrados.'],
+  equipamentos:['liquidificador'], nutri:{kcal:290,prot:11,carb:48,gord:7} },
+
+{ nome:'Sanduíche natural de frango', categoria:'Rápido', tags:['lanche','fit','marmita'],
+  tempoMin:15, porcoesBase:2,
+  ingredientes:[
+    {nome:'pao',qtd:4,unidade:'un',critico:true},
+    {nome:'frango',qtd:200,unidade:'g',critico:true},
+    {nome:'iogurte',qtd:3,unidade:'col sopa'},
+    {nome:'cenoura',qtd:0.5,unidade:'un'},
+    {nome:'alface',qtd:2,unidade:'folha'},
+    {nome:'sal',qtd:1,unidade:'pitada'}],
+  passos:['Misture o frango desfiado com iogurte, cenoura ralada e sal — maionese de verdade é opcional, iogurte segura o cremoso.','Recheie o pão de forma com a pasta e a alface.','Embrulhe em filme e gele 30 min se for para viagem.','A pasta dura 3 dias na geladeira: lanche da semana resolvido.'],
+  equipamentos:[], nutri:{kcal:320,prot:26,carb:38,gord:7} },
+
+{ nome:'Panqueca americana fofinha', categoria:'Rápido', tags:['café','doce','família'],
+  tempoMin:20, porcoesBase:3,
+  ingredientes:[
+    {nome:'farinha de trigo',qtd:1.5,unidade:'xíc',critico:true},
+    {nome:'leite',qtd:1,unidade:'xíc',critico:true},
+    {nome:'ovo',qtd:1,unidade:'un',critico:true},
+    {nome:'acucar',qtd:2,unidade:'col sopa'},
+    {nome:'fermento',qtd:1,unidade:'col sopa'},
+    {nome:'manteiga',qtd:1,unidade:'col sopa'},
+    {nome:'mel',qtd:2,unidade:'col sopa',opcional:true}],
+  passos:['Misture os secos; à parte, leite, ovo e manteiga derretida. Junte SEM bater demais — gruminhos são bem-vindos.','Descanse a massa por 5 min (o fermento trabalha).','Frigideira em fogo médio-baixo: conchas pequenas, vire quando borbulhar em cima (2 min por lado).','Pilha alta, mel escorrendo. Domingo autorizado.'],
+  equipamentos:['frigideira'], nutri:{kcal:340,prot:9,carb:56,gord:9} },
+
+/* ===== PACOTE v4 — Aproveitamento (+5) ===== */
+{ nome:'Arroz de forno de sobras', categoria:'Prato principal', tags:['aproveitamento','família','forno'],
+  tempoMin:35, porcoesBase:4,
+  ingredientes:[
+    {nome:'arroz',qtd:3,unidade:'xíc',critico:true},
+    {nome:'queijo mussarela',qtd:150,unidade:'g',critico:true},
+    {nome:'ovo',qtd:2,unidade:'un'},
+    {nome:'milho',qtd:1,unidade:'lata',opcional:true},
+    {nome:'presunto',qtd:100,unidade:'g',opcional:true},
+    {nome:'molho de tomate',qtd:0.5,unidade:'xíc'},
+    {nome:'sal',qtd:1,unidade:'pitada'}],
+  passos:['Misture o arroz de ontem com ovos batidos, milho, presunto picado, molho e metade do queijo.','Ajeite num refratário untado; cubra com o resto da mussarela.','Forno 200°C por 20 min até gratinar.','O que ia murchar na geladeira virou o prato principal.'],
+  equipamentos:['forno','refratário'], nutri:{kcal:380,prot:17,carb:48,gord:13} },
+
+{ nome:'Tutu de feijão', categoria:'Acompanhamento', tags:['aproveitamento','mineira','clássico'],
+  tempoMin:25, porcoesBase:4,
+  ingredientes:[
+    {nome:'feijao',qtd:3,unidade:'xíc',critico:true},
+    {nome:'farinha de mandioca',qtd:0.75,unidade:'xíc',critico:true},
+    {nome:'bacon',qtd:100,unidade:'g'},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'cebolinha',qtd:2,unidade:'col sopa',opcional:true}],
+  passos:['Bata o feijão de ontem com o caldo no liquidificador.','Frite o bacon; doure cebola e alho na gordura.','Junte o feijão batido e, quando ferver, a farinha em chuva, mexendo por 3 min até virar um creme firme.','Cebolinha por cima. Com couve, torresmo e ovo: o tutu completo.'],
+  equipamentos:['liquidificador','panela'], nutri:{kcal:290,prot:12,carb:38,gord:11} },
+
+{ nome:'Farofa de talos', categoria:'Acompanhamento', tags:['aproveitamento','vegano','barata'],
+  tempoMin:15, porcoesBase:4,
+  ingredientes:[
+    {nome:'talos de couve',qtd:1,unidade:'xíc',critico:true},
+    {nome:'farinha de mandioca',qtd:1.5,unidade:'xíc',critico:true},
+    {nome:'cebola',qtd:0.5,unidade:'un'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'oleo',qtd:2,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Pique fino os talos de couve, brócolis ou salsinha que iam para o lixo.','Refogue no óleo com cebola e alho por 4 min até amaciar.','Farinha em fogo baixo, mexendo por 4 min até tostar.','Sal e pronto: a farofa nutritiva feita da parte que ninguém usa.'],
+  equipamentos:['frigideira'], nutri:{kcal:230,prot:3,carb:38,gord:8} },
+
+{ nome:'Refogado de talos e folhas', categoria:'Acompanhamento', tags:['aproveitamento','vegano','fit'],
+  tempoMin:12, porcoesBase:3,
+  ingredientes:[
+    {nome:'talos de brocolis',qtd:2,unidade:'xíc',critico:true},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'azeite',qtd:1,unidade:'col sopa'},
+    {nome:'limao',qtd:0.5,unidade:'un',opcional:true},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Descasque os talos de brócolis/couve-flor e fatie fino (o miolo é macio e adocicado).','Doure o alho no azeite; salteie os talos por 4 min em fogo alto.','Sal e limão. Textura de aspargo, custo de lixo evitado.','Folhas de cenoura e beterraba entram do mesmo jeito, por 2 min.'],
+  equipamentos:['frigideira'], nutri:{kcal:60,prot:2,carb:6,gord:4} },
+
+{ nome:'Croutons de pão amanhecido', categoria:'Acompanhamento', tags:['aproveitamento','base','barata'],
+  tempoMin:15, porcoesBase:6,
+  ingredientes:[
+    {nome:'pao',qtd:2,unidade:'un',critico:true},
+    {nome:'azeite',qtd:3,unidade:'col sopa'},
+    {nome:'alho',qtd:2,unidade:'dente'},
+    {nome:'oregano',qtd:1,unidade:'col chá'},
+    {nome:'sal',qtd:1,unidade:'pitada'}],
+  passos:['Corte o pão duro em cubos.','Misture com azeite, alho amassado, orégano e sal.','Forno 180°C por 10 min (ou frigideira, mexendo) até dourar e secar.','Pote fechado por 1 semana: sopa e salada agradecem, o lixo perde.'],
+  equipamentos:['forno'], nutri:{kcal:140,prot:3,carb:18,gord:6} },
+
+/* ===== PACOTE v4 — Arroz e clássicos (+4) ===== */
+{ nome:'Arroz à grega', categoria:'Acompanhamento', tags:['festa','clássico'],
+  tempoMin:30, porcoesBase:6,
+  ingredientes:[
+    {nome:'arroz',qtd:2,unidade:'xíc',critico:true},
+    {nome:'cenoura',qtd:1,unidade:'un'},
+    {nome:'pimentao',qtd:1,unidade:'un'},
+    {nome:'ervilha',qtd:1,unidade:'lata'},
+    {nome:'uva passa',qtd:3,unidade:'col sopa',opcional:true},
+    {nome:'cebola',qtd:0.5,unidade:'un'},
+    {nome:'oleo',qtd:2,unidade:'col sopa'},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Faça o arroz normalmente (refogado, 4 xícaras de água, 15 min).','Salteie cenoura e pimentão em cubinhos com a cebola por 4 min.','Misture ao arroz pronto com a ervilha e as passas (time passas ou time anti-passas, o app não julga).','O colorido da ceia disponível o ano todo.'],
+  equipamentos:['panela','frigideira'], nutri:{kcal:280,prot:6,carb:52,gord:6} },
+
+{ nome:'Baião de dois', categoria:'Prato principal', tags:['nordestina','clássico','panela única'],
+  tempoMin:45, porcoesBase:5,
+  ingredientes:[
+    {nome:'arroz',qtd:1.5,unidade:'xíc',critico:true},
+    {nome:'feijao fradinho',qtd:2,unidade:'xíc',critico:true},
+    {nome:'queijo coalho',qtd:150,unidade:'g',critico:true},
+    {nome:'bacon',qtd:100,unidade:'g'},
+    {nome:'calabresa',qtd:150,unidade:'g',opcional:true},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:3,unidade:'dente'},
+    {nome:'coentro',qtd:3,unidade:'col sopa',opcional:true},
+    {nome:'sal',qtd:1,unidade:'col chá'}],
+  passos:['Cozinhe o fradinho por 20 min — firme. Reserve com 1 xícara do caldo.','Frite bacon e calabresa; doure cebola e alho na gordura.','Junte o arroz, frite 2 min; adicione o feijão, o caldo reservado e água até cobrir com sal.','Fogo baixo por 15 min; misture o queijo coalho em cubos no final e o coentro. Cabra da peste.'],
+  equipamentos:['panela'], nutri:{kcal:480,prot:21,carb:56,gord:19} },
+
+{ nome:'Arroz carreteiro', categoria:'Prato principal', tags:['gaúcha','aproveitamento','panela única'],
+  tempoMin:50, porcoesBase:5,
+  ingredientes:[
+    {nome:'carne de sol',qtd:400,unidade:'g',critico:true},
+    {nome:'arroz',qtd:2,unidade:'xíc',critico:true},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:3,unidade:'dente'},
+    {nome:'tomate',qtd:2,unidade:'un'},
+    {nome:'oleo',qtd:2,unidade:'col sopa'},
+    {nome:'cheiro-verde',qtd:3,unidade:'col sopa',opcional:true},
+    {nome:'sal',qtd:1,unidade:'pitada'}],
+  passos:['Dessalgue a carne (ou use sobra de churrasco picada — o carreteiro original é isso).','Frite a carne em cubos no óleo até dourar; junte cebola, alho e tomate.','Adicione o arroz, frite 2 min, e cubra com 4 xícaras de água fervente. Cuidado com o sal: a carne já tem.','Fogo baixo por 18 min. Cheiro-verde e o churrasco de ontem virou o almoço de hoje.'],
+  equipamentos:['panela'], nutri:{kcal:450,prot:28,carb:50,gord:15} },
+
+{ nome:'Feijão tropeiro', categoria:'Prato principal', tags:['mineira','clássico','família'],
+  tempoMin:40, porcoesBase:5,
+  ingredientes:[
+    {nome:'feijao',qtd:3,unidade:'xíc',critico:true},
+    {nome:'farinha de mandioca',qtd:1,unidade:'xíc',critico:true},
+    {nome:'bacon',qtd:150,unidade:'g',critico:true},
+    {nome:'calabresa',qtd:150,unidade:'g'},
+    {nome:'ovo',qtd:3,unidade:'un'},
+    {nome:'couve',qtd:0.5,unidade:'maço',opcional:true},
+    {nome:'cebola',qtd:1,unidade:'un'},
+    {nome:'alho',qtd:3,unidade:'dente'},
+    {nome:'sal',qtd:1,unidade:'pitada'}],
+  passos:['Use feijão cozido ESCORRIDO (sem caldo — tropeiro é soltinho).','Frite bacon e calabresa; nessa gordura, doure cebola, alho e a couve em tiras.','Empurre para o canto e mexa os ovos na mesma panela.','Junte o feijão, depois a farinha aos poucos, misturando por 3 min. Acerte o sal. Com torresmo por cima: Minas inteira num prato.'],
+  equipamentos:['frigideira'], nutri:{kcal:470,prot:22,carb:44,gord:23} }
 ];
 
 /* ============ SEMEADURA VERSIONADA ============
    Para lançar receitas novas: adicionar em RECEITAS_SEED e subir SEED_VERSION.
    Instalações existentes recebem só as inéditas (por nome canônico),
    sem duplicar, sem tocar em favoritos/edições e respeitando exclusões. */
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 async function semearReceitas() {
   const versaoLocal = S.config.seedVersion || (S.config.seeded ? 1 : 0);
   if (versaoLocal >= SEED_VERSION) return 0;
@@ -2632,6 +3125,61 @@ async function semearReceitas() {
   S.config.seeded = true;
   await DB.salvar('config', S.config);
   return n;
+}
+
+/* ============ IMPORTAÇÃO DE RECEITAS (RecipeImporter v1 — via JSON) ============
+   Fluxo: a pessoa pede a um assistente de IA (Claude etc.) para converter a
+   receita dela neste formato JSON, cola no app e importa. */
+const CATEGORIAS_VALIDAS = ['Prato principal','Acompanhamento','Rápido','Doce','Salada','Sopa','Molho/Tempero','Conserva'];
+const PROMPT_IMPORTACAO = 'Converta a(s) receita(s) que vou enviar para JSON no formato do app ChefPrep. Responda APENAS com o JSON (um array), sem explicacoes e sem markdown. Formato de cada receita: {"nome":"...","categoria":"Prato principal|Acompanhamento|Rapido|Doce|Salada|Sopa|Molho/Tempero|Conserva","tags":["ate 5 tags curtas"],"tempoMin":30,"porcoesBase":4,"ingredientes":[{"nome":"ingrediente generico em minusculas (ex: frango, tomate, oleo)","qtd":2,"unidade":"g|kg|ml|l|un|xic|col sopa|col cha|dente|folha|pitada|lata|maco|a gosto","opcional":false,"critico":false}],"passos":["frases curtas e diretas, com tempos explicitos quando houver, ex: cozinhe por 15 min"],"nutri":null}. Marque critico:true apenas nos 1-2 ingredientes essenciais (proteina ou base) e opcional:true nos dispensaveis. Minha(s) receita(s): ';
+function validarReceitaImportada(o) {
+  if (!o || typeof o !== 'object') return null;
+  const nome = (o.nome || '').toString().trim();
+  if (!nome || nome.length > 80) return null;
+  const ingredientes = (Array.isArray(o.ingredientes) ? o.ingredientes : [])
+    .map(i => ({
+      nome: (i && i.nome || '').toString().trim().toLowerCase(),
+      qtd: parseFloat(String(i && i.qtd).replace(',', '.')) || 1,
+      unidade: (i && i.unidade || 'un').toString().trim(),
+      opcional: !!(i && i.opcional),
+      critico: !!(i && i.critico)
+    })).filter(i => i.nome);
+  const passos = (Array.isArray(o.passos) ? o.passos : [])
+    .map(p => String(p).trim()).filter(Boolean);
+  if (ingredientes.length < 2 || passos.length < 2) return null;
+  const n = o.nutri;
+  return {
+    id: U.id(), nome,
+    categoria: CATEGORIAS_VALIDAS.includes(o.categoria) ? o.categoria : 'Prato principal',
+    tags: (Array.isArray(o.tags) ? o.tags : []).map(t => String(t).trim()).filter(Boolean).slice(0, 6),
+    tempoMin: Math.max(1, +o.tempoMin || 30),
+    porcoesBase: Math.max(1, +o.porcoesBase || 4),
+    ingredientes, passos,
+    equipamentos: (Array.isArray(o.equipamentos) ? o.equipamentos : []).map(String).slice(0, 6),
+    nutri: n && typeof n === 'object'
+      ? { kcal: +n.kcal || 0, prot: +n.prot || 0, carb: +n.carb || 0, gord: +n.gord || 0 } : null,
+    favorito: false, origem: 'importada'
+  };
+}
+function importarReceitasDeTexto(txt) {
+  txt = (txt || '').trim()
+    .replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+  let dados;
+  try { dados = JSON.parse(txt); } catch (e) { return { erro: 'JSON inválido — copie a resposta completa do assistente' }; }
+  if (!Array.isArray(dados)) dados = [dados];
+  const existentes = new Set(S.receitas.map(r => canonico(r.nome)));
+  let ok = 0, puladas = 0, invalidas = 0;
+  for (const o of dados) {
+    const r = validarReceitaImportada(o);
+    if (!r) { invalidas++; continue; }
+    const c = canonico(r.nome);
+    if (existentes.has(c)) { puladas++; continue; }
+    existentes.add(c);
+    S.receitas.push(r);
+    DB.salvar('receitas', r);
+    ok++;
+  }
+  return { ok, puladas, invalidas };
 }
 
 /* ============ ENGINES DETERMINÍSTICOS ============ */
@@ -2808,7 +3356,9 @@ const UI = {
   vInicio() {
     const sug = SuggestionProvider.sugerir({ receitas: S.receitas });
     const prontas = sug.filter(s => s.badge === 'ok');
-    const faltaUm = sug.filter(s => s.badge === 'um').slice(0, 3);
+    const f1 = sug.filter(s => s.faltam.length === 1).slice(0, 4);
+    const f2 = sug.filter(s => s.faltam.length === 2).slice(0, 3);
+    const f3 = sug.filter(s => s.faltam.length === 3).slice(0, 3);
     const venc = vencendo();
     let h = `<div class="hero">
       <div class="pergunta">O que dá pra fazer hoje?</div>
@@ -2827,13 +3377,21 @@ const UI = {
     }
     if (prontas.length) {
       h += `<div class="secao-rotulo">Pode fazer agora</div>`;
-      h += prontas.slice(0, 4).map(s => UI.cardSugestao(s)).join('');
+      h += prontas.slice(0, 6).map(s => UI.cardSugestao(s)).join('');
     }
-    if (faltaUm.length) {
+    if (f1.length) {
       h += `<div class="secao-rotulo">Falta só 1 item</div>`;
-      h += faltaUm.map(s => UI.cardSugestao(s)).join('');
+      h += f1.map(s => UI.cardSugestao(s)).join('');
     }
-    if (!prontas.length && !faltaUm.length && S.estoque.length) {
+    if (f2.length) {
+      h += `<div class="secao-rotulo">Faltam 2 itens</div>`;
+      h += f2.map(s => UI.cardSugestao(s)).join('');
+    }
+    if (f3.length) {
+      h += `<div class="secao-rotulo">Faltam 3 itens</div>`;
+      h += f3.map(s => UI.cardSugestao(s)).join('');
+    }
+    if (!prontas.length && !f1.length && !f2.length && !f3.length && S.estoque.length) {
       h += `<div class="vazio" style="margin-top:16px"><b>Nenhum cruzamento ainda</b>
         Adicione mais itens ao estoque ou cadastre novas receitas.</div>`;
     }
@@ -2889,6 +3447,7 @@ const UI = {
     let h = `<div class="barra-busca">
       <input type="search" placeholder="Buscar por nome ou ingrediente…" value="${U.esc(f.texto)}"
         oninput="S.filtroReceitas.texto=this.value;UI.renderSoLista()" aria-label="Buscar receitas">
+      <button class="btn btn-contorno" onclick="UI.importarReceitas()" aria-label="Importar receitas">\u{1F4E5}</button>
       <button class="btn btn-primario" onclick="UI.formReceita()">＋</button>
     </div>
     <div class="chips">
@@ -3391,12 +3950,13 @@ const UI = {
       <div class="secao-rotulo">Seus dados</div>
       <div class="card-acoes" style="margin-top:2px">
         <button class="btn btn-contorno" onclick="UI.exportarJSON()">⬇️ Exportar backup</button>
-        <button class="btn btn-contorno" onclick="document.getElementById('cf-imp').click()">⬆️ Importar</button>
+        <button class="btn btn-contorno" onclick="document.getElementById('cf-imp').click()">⬆️ Importar backup</button>
+        <button class="btn btn-contorno" onclick="UI.importarReceitas()">\u{1F4E5} Importar receitas</button>
         <input id="cf-imp" type="file" accept=".json" class="escondido" onchange="UI.importarJSON(this)">
       </div>
       <div class="dica" style="margin-top:8px">Tudo fica salvo apenas neste dispositivo (IndexedDB). O backup é um arquivo JSON seu — leve para onde quiser.</div>
       <div class="secao-rotulo">Sobre</div>
-      <div class="dica">ChefPrep v1.3 · offline-first · PWA instalável<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
+      <div class="dica">ChefPrep v1.4 · offline-first · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
   },
   setPerfil(p) {
     S.config.perfil = p; DB.salvar('config', S.config);
@@ -3494,6 +4054,50 @@ const UI = {
     if (el) el.remove();
   },
 
+  importarReceitas() {
+    UI.folha('Importar receitas', `
+      <div class="dica" style="margin-bottom:12px;line-height:1.6">
+        <b>Como funciona:</b> peça a um assistente de IA (Claude, por exemplo) para
+        converter sua receita no formato do ChefPrep. Toque em <b>copiar prompt</b>,
+        cole no assistente junto com sua receita, copie a resposta (o JSON) e cole aqui embaixo.</div>
+      <button class="btn btn-contorno" style="width:100%;justify-content:center;margin-bottom:12px"
+        onclick="UI.copiarPromptImportacao()">\u{1F4CB} Copiar prompt para o assistente</button>
+      <div class="campo"><label>Cole o JSON aqui</label>
+        <textarea id="ir-json" style="min-height:140px" placeholder='[{"nome":"Minha receita", ...}]'></textarea></div>
+      <button class="btn btn-primario" style="width:100%;justify-content:center"
+        onclick="UI.confirmarImportacaoReceitas()">Importar receitas</button>
+      <div class="dica" style="text-align:center;margin-top:8px">ou</div>
+      <button class="btn btn-contorno" style="width:100%;justify-content:center;margin-top:8px"
+        onclick="document.getElementById('ir-arq').click()">\u{1F4C2} Escolher arquivo .json</button>
+      <input id="ir-arq" type="file" accept=".json,.txt" class="escondido" onchange="UI.importarReceitasArquivo(this)">
+      <div class="dica" style="margin-top:10px">Receitas com nome já existente são puladas (nada é sobrescrito). As importadas ficam marcadas como suas e sobrevivem às atualizações do app.</div>`);
+  },
+  copiarPromptImportacao() {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(PROMPT_IMPORTACAO)
+        .then(() => UI.toast('Prompt copiado ✓ Cole no assistente com sua receita'))
+        .catch(() => UI.toast('Não foi possível copiar'));
+    }
+  },
+  confirmarImportacaoReceitas() {
+    const res = importarReceitasDeTexto(document.getElementById('ir-json').value);
+    if (res.erro) { UI.toast(res.erro); return; }
+    UI.fecharOverlay();
+    UI.toast(`\u{1F4D6} ${res.ok} importada${res.ok === 1 ? '' : 's'}` +
+      (res.puladas ? ` · ${res.puladas} já existia${res.puladas === 1 ? '' : 'm'}` : '') +
+      (res.invalidas ? ` · ${res.invalidas} inválida${res.invalidas === 1 ? '' : 's'}` : ''));
+    UI.render();
+  },
+  importarReceitasArquivo(input) {
+    const f = input.files[0]; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const el = document.getElementById('ir-json');
+      if (el) { el.value = reader.result; UI.confirmarImportacaoReceitas(); }
+    };
+    reader.readAsText(f);
+  },
+
   exportarJSON() {
     const dump = { versao: 1, exportadoEm: new Date().toISOString(),
       receitas: S.receitas, estoque: S.estoque, plano: S.plano, lista: S.lista, config: S.config };
@@ -3536,9 +4140,22 @@ const UI = {
     if (novas && S.config.seedVersion > 1) UI._toastInicial = novas + ' receitas novas adicionadas ao banco!';
     UI.render();
     if (UI._toastInicial) { UI.toast('\u{1F4D6} ' + UI._toastInicial); UI._toastInicial = null; }
+    // Proteção dos dados: pede ao navegador para NÃO despejar o IndexedDB
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
     // PWA: service worker (só http/https; em file:// falha silenciosamente)
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        reg.onupdatefound = () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.onstatechange = () => {
+            if (nw.state === 'activated' && navigator.serviceWorker.controller)
+              UI.toast('App atualizado para a versão mais recente ✓');
+          };
+        };
+      }).catch(() => {});
     }
     // wake lock cai quando a aba perde foco — readquire se ainda cozinhando
     document.addEventListener('visibilitychange', () => {
