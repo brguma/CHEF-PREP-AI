@@ -289,6 +289,11 @@ nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);
   transform:translateX(-50%);background:var(--tinta);color:var(--louca);padding:11px 18px;
   border-radius:99px;font-size:13.5px;font-weight:600;z-index:300;white-space:nowrap;
   animation:sobe .2s ease-out;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+.toast.com-acao{display:flex;align-items:center;gap:6px;padding-right:8px}
+.toast .toast-msg{overflow:hidden;text-overflow:ellipsis}
+.toast .toast-desfazer{background:none;border:0;color:#FFC864;font:inherit;font-weight:800;
+  padding:6px 12px;border-radius:99px;cursor:pointer;flex:none}
+.toast .toast-desfazer:active{background:rgba(255,255,255,.12)}
 
 .escondido{display:none!important}
 @media(min-width:700px){
@@ -329,7 +334,8 @@ nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);
 
 /* ============ UTILS ============ */
 const U = {
-  id: () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+  id: () => (crypto && crypto.randomUUID) ? crypto.randomUUID()
+    : Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
   norm(s) { // normalização canônica de nomes de ingredientes
     return (s || '').toLowerCase().trim()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -3238,22 +3244,62 @@ const SuggestionProvider = {
   }
 };
 
-/* --- Motor de Busca: texto + sinônimos + filtros --- */
+/* --- Motor de Busca: texto + sinônimos + filtros + tolerância a erros ---
+   Camadas (da mais barata à mais cara):
+   1) substring exata (comportamento antigo, cobre a maioria)
+   2) por token: prefixo ("frang grel" → Frango Grelhado), qualquer ordem
+   3) singular/plural pt-BR (limões→limao, ovos→ovo)
+   4) erro de digitação: distância OSA ≤1 (palavras ≥4) ou ≤2 (≥7),
+      transposição conta 1 ("fragno" acha "frango") */
+function distOSA(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let ant2 = null, ant = [], cur = [];
+  for (let j = 0; j <= b.length; j++) ant[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    cur = [i]; let melhor = i;
+    for (let j = 1; j <= b.length; j++) {
+      let c = Math.min(ant[j] + 1, cur[j - 1] + 1, ant[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1])
+        c = Math.min(c, ant2[j - 2] + 1); // transposição de letras vizinhas
+      cur[j] = c; if (c < melhor) melhor = c;
+    }
+    if (melhor > max) return max + 1; // corte: já estourou a tolerância
+    ant2 = ant; ant = cur;
+  }
+  return ant[b.length];
+}
+function raizPt(t) { // singular aproximado (bom o bastante junto com a distância)
+  if (t.length <= 3) return t;
+  if (t.endsWith('oes') || t.endsWith('aes')) return t.slice(0, -3) + 'ao';
+  if (t.endsWith('s')) return t.slice(0, -1);
+  return t;
+}
+function tokenCasa(q, alvo) {
+  if (alvo.startsWith(q)) return true;                 // prefixo / palavra incompleta
+  const rq = raizPt(q), ra = raizPt(alvo);
+  if (ra.startsWith(rq)) return true;                  // plural/singular
+  const tol = q.length >= 7 ? 2 : q.length >= 4 ? 1 : 0;
+  if (!tol) return false;
+  return distOSA(q, alvo, tol) <= tol                  // palavra inteira com typo
+    || distOSA(q, alvo.slice(0, q.length), tol) <= tol // prefixo com typo
+    || distOSA(rq, ra, tol) <= tol;                    // raiz com typo
+}
 function buscarReceitas() {
   const f = S.filtroReceitas;
   const termo = U.norm(f.texto);
   const termoCan = canonico(f.texto);
+  const termos = termo.split(' ').filter(Boolean)
+    .flatMap(t => (SINONIMOS[t] || t).split(' ')); // expande sinônimo por palavra
   let out = S.receitas.filter(r => {
     if (f.cat !== 'todas' && r.categoria !== f.cat) return false;
     if (f.soFavoritas && !r.favorito) return false;
     if (!termo) return true;
-    const alvo = U.norm(r.nome + ' ' + r.categoria + ' ' + (r.tags || []).join(' '));
-    if (alvo.includes(termo)) return true;
-    // busca por ingrediente, com expansão de sinônimo
-    return r.ingredientes.some(i => {
-      const c = canonico(i.nome);
-      return c.includes(termo) || c === termoCan || U.norm(i.nome).includes(termo);
-    });
+    const alvo = U.norm(r.nome + ' ' + r.categoria + ' ' + (r.tags || []).join(' '))
+      + ' ' + r.ingredientes.map(i => canonico(i.nome) + ' ' + U.norm(i.nome)).join(' ');
+    if (alvo.includes(termo) || alvo.includes(termoCan)) return true; // caminho rápido
+    const alvoTokens = alvo.split(' ');
+    // fuzzy: TODA palavra buscada precisa casar com ALGUMA palavra do alvo (ordem livre)
+    return termos.every(q => alvoTokens.some(a => tokenCasa(q, a)));
   });
   if (f.soPossiveis) {
     const ok = new Set(SuggestionProvider.sugerir({ receitas: out })
@@ -3337,6 +3383,21 @@ const UI = {
     el.className = 'toast'; el.textContent = msg;
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 2400);
+  },
+  /* Toast com botão Desfazer (5s). O item já foi removido do estado e do banco;
+     desfazer = reinserir. Simples e sem timers de exclusão pendente. */
+  toastDesfazer(msg, aoDesfazer) {
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    const el = document.createElement('div');
+    el.className = 'toast com-acao';
+    const sp = document.createElement('span');
+    sp.className = 'toast-msg'; sp.textContent = msg;
+    const btn = document.createElement('button');
+    btn.className = 'toast-desfazer'; btn.type = 'button'; btn.textContent = 'Desfazer';
+    const timer = setTimeout(() => el.remove(), 5000);
+    btn.addEventListener('click', () => { clearTimeout(timer); el.remove(); aoDesfazer(); });
+    el.append(sp, btn);
+    document.body.appendChild(el);
   },
   fecharOverlay() {
     document.getElementById('overlays').innerHTML = '';
@@ -3535,19 +3596,29 @@ const UI = {
       </div>`);
   },
   removerReceita(id) {
-    if (!confirm('Excluir esta receita?')) return;
     const r = S.receitas.find(x => x.id === id);
-    if (r && r.origem === 'seed') { // não volta quando o banco atualizar
+    if (!r) return;
+    const eraSeed = r.origem === 'seed';
+    if (eraSeed) { // não volta quando o banco atualizar
       (S.config.removidasSeed = S.config.removidasSeed || []).push(canonico(r.nome));
       DB.salvar('config', S.config);
     }
     S.receitas = S.receitas.filter(x => x.id !== id);
     DB.remover('receitas', id); UI.fecharOverlay(); UI.render();
+    UI.toastDesfazer('Receita removida', () => {
+      S.receitas.push(r); DB.salvar('receitas', r);
+      if (eraSeed) {
+        S.config.removidasSeed = (S.config.removidasSeed || []).filter(c => c !== canonico(r.nome));
+        DB.salvar('config', S.config);
+      }
+      UI.render();
+    });
   },
 
   /* ---------- MODO COZINHANDO ---------- */
   modoCozinhando(id, porcoes, passo = 0) {
     const r = S.receitas.find(x => x.id === id);
+    if (!r) { UI.fecharOverlay(); return; }
     const total = r.passos.length;
     const fim = passo >= total;
     UI.ativarWakeLock(); // tela não apaga com a mão na massa
@@ -3633,6 +3704,7 @@ const UI = {
   },
   mudaQtd(id, delta) {
     const e = S.estoque.find(x => x.id === id);
+    if (!e) { UI.render(); return; } // item já removido — só ressincroniza a tela
     const passo = ['g', 'ml'].includes(U.norm(e.unidade)) ? 50 : (['kg', 'l'].includes(U.norm(e.unidade)) ? 0.5 : 1);
     e.qtd = Math.max(0, Math.round((e.qtd + delta * passo) * 100) / 100);
     if (e.qtd === 0) {
@@ -3645,8 +3717,13 @@ const UI = {
     UI.render();
   },
   removerEstoque(id) {
+    const e = S.estoque.find(x => x.id === id);
+    if (!e) return;
     S.estoque = S.estoque.filter(x => x.id !== id);
     DB.remover('estoque', id); UI.render();
+    UI.toastDesfazer(`"${e.nome}" removido do estoque`, () => {
+      S.estoque.push(e); DB.salvar('estoque', e); UI.render();
+    });
   },
   formEstoque() {
     UI.folha('Adicionar ao estoque', `
@@ -3737,8 +3814,13 @@ const UI = {
     UI.fecharOverlay(); UI.render();
   },
   tirarDoPlano(id) {
-    S.plano = S.plano.filter(p => p.id !== id);
+    const p = S.plano.find(x => x.id === id);
+    if (!p) return;
+    S.plano = S.plano.filter(x => x.id !== id);
     DB.remover('plano', id); UI.render();
+    UI.toastDesfazer('Refeição removida do plano', () => {
+      S.plano.push(p); DB.salvar('plano', p); UI.render();
+    });
   },
   addAoPlano(receitaId) {
     UI.fecharOverlay();
@@ -3801,8 +3883,13 @@ const UI = {
     l.comprado = !l.comprado; DB.salvar('lista', l); UI.render();
   },
   removerLista(id) {
-    S.lista = S.lista.filter(l => l.id !== id);
+    const l = S.lista.find(x => x.id === id);
+    if (!l) return;
+    S.lista = S.lista.filter(x => x.id !== id);
     DB.remover('lista', id); UI.render();
+    UI.toastDesfazer(`"${l.nome}" removido da lista`, () => {
+      S.lista.push(l); DB.salvar('lista', l); UI.render();
+    });
   },
   compradosProEstoque() {
     const feitos = S.lista.filter(l => l.comprado);
@@ -3956,7 +4043,7 @@ const UI = {
       </div>
       <div class="dica" style="margin-top:8px">Tudo fica salvo apenas neste dispositivo (IndexedDB). O backup é um arquivo JSON seu — leve para onde quiser.</div>
       <div class="secao-rotulo">Sobre</div>
-      <div class="dica">ChefPrep v1.4 · offline-first · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
+      <div class="dica">ChefPrep v1.5 · offline-first · busca fuzzy · desfazer exclusões · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
   },
   setPerfil(p) {
     S.config.perfil = p; DB.salvar('config', S.config);
@@ -4089,7 +4176,9 @@ const UI = {
     UI.render();
   },
   importarReceitasArquivo(input) {
-    const f = input.files[0]; if (!f) return;
+    const f = input.files[0];
+    input.value = ''; // permite reescolher o mesmo arquivo
+    if (!f) return;
     const reader = new FileReader();
     reader.onload = () => {
       const el = document.getElementById('ir-json');
@@ -4109,21 +4198,33 @@ const UI = {
     UI.toast('Backup exportado ✓');
   },
   importarJSON(input) {
-    const f = input.files[0]; if (!f) return;
+    const f = input.files[0];
+    input.value = ''; // permite escolher o MESMO arquivo de novo (onchange não dispara com value igual)
+    if (!f) return;
     const reader = new FileReader();
     reader.onload = async () => {
       try {
         const d = JSON.parse(reader.result);
-        if (!d.receitas || !Array.isArray(d.receitas)) throw new Error('formato');
+        if (!d || typeof d !== 'object' || !Array.isArray(d.receitas)) throw new Error('formato');
+        // valida e normaliza ANTES de apagar qualquer coisa (keyPath 'id' é obrigatório no IndexedDB)
+        const dump = {};
+        for (const s of ['receitas', 'estoque', 'plano', 'lista']) {
+          dump[s] = (Array.isArray(d[s]) ? d[s] : [])
+            .filter(it => it && typeof it === 'object')
+            .map(it => (it.id ? it : Object.assign({ id: U.id() }, it)));
+        }
         if (!confirm('Importar vai substituir todos os dados atuais. Continuar?')) return;
         for (const s of ['receitas', 'estoque', 'plano', 'lista']) {
           await DB.limpar(s);
-          for (const item of (d[s] || [])) await DB.salvar(s, item);
+          for (const item of dump[s]) await DB.salvar(s, item);
         }
-        if (d.config) { d.config.id = 'cfg'; await DB.salvar('config', d.config); }
+        if (d.config && typeof d.config === 'object') {
+          d.config.id = 'cfg'; await DB.salvar('config', d.config);
+        }
         await carregarTudo();
         UI.fecharOverlay(); UI.toast('Dados importados ✓'); UI.render();
       } catch (e) {
+        console.error('importarJSON:', e);
         UI.toast('Arquivo inválido — use um backup do ChefPrep');
       }
     };
@@ -4136,8 +4237,9 @@ const UI = {
   try {
     await DB.abrir();
     await carregarTudo();
+    const jaInstalado = !!(S.config.seeded || S.config.seedVersion); // ANTES de semear (semear sempre grava seedVersion)
     const novas = await semearReceitas();
-    if (novas && S.config.seedVersion > 1) UI._toastInicial = novas + ' receitas novas adicionadas ao banco!';
+    if (novas && jaInstalado) UI._toastInicial = novas + ' receitas novas adicionadas ao banco!';
     UI.render();
     if (UI._toastInicial) { UI.toast('\u{1F4D6} ' + UI._toastInicial); UI._toastInicial = null; }
     // Proteção dos dados: pede ao navegador para NÃO despejar o IndexedDB
