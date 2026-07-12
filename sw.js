@@ -1,9 +1,9 @@
 /* ChefPrep (c) 2026 Bruno Machado - BM Engenharia e Consultoria Ltda. Todos os direitos reservados. */
-/* v1.6.0 — estratégia network-first para o app:
+/* v1.7.0 — estratégia network-first para o app:
    - index.html: sempre busca da REDE quando online (atualização automática,
      sem desinstalar, sem ritual de versão); cache só como fallback offline.
    - estáticos (ícones, manifest): cache-first. */
-const CACHE = 'chefprep-v1.6.0';
+const CACHE = 'chefprep-v1.7.0';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
                './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
