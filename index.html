@@ -359,6 +359,14 @@ const U = {
     if (n == null || isNaN(n)) return '';
     return (Math.round(n * 100) / 100).toString().replace('.', ',');
   },
+  /* Converte qtd entre unidades compatíveis; null = incompatíveis (não dá para somar) */
+  convUnid(qtd, de, para) {
+    const a = U.norm(de), b = U.norm(para);
+    if (a === b) return qtd;
+    const tab = { 'g|kg': 0.001, 'kg|g': 1000, 'ml|l': 0.001, 'l|ml': 1000 };
+    const f = tab[a + '|' + b];
+    return f ? qtd * f : null;
+  },
   diaSemana: ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado']
 };
 
@@ -4238,13 +4246,17 @@ const UI = {
     });
   },
   formEstoque() {
+    // aba ativa define o local padrão (livre para trocar); em "todos", geladeira
+    const localPadrao = S.filtroEstoque !== 'todos' ? S.filtroEstoque : 'geladeira';
     UI.folha('Adicionar ao estoque', `
       <div class="campo"><label>Item</label>
-        <input id="fe-nome" placeholder="Ex.: frango, tomate, macaxeira…" autocomplete="off"></div>
+        <input id="fe-nome" placeholder="Ex.: frango, tomate, macaxeira…" autocomplete="off"
+          oninput="UI.checaItemExistente()"></div>
+      <div class="dica" id="fe-hint" style="display:none;margin:-6px 0 10px"></div>
       <div class="linha-3">
         <div class="campo"><label>Local</label>
-          <select id="fe-local"><option value="geladeira">Geladeira</option>
-            <option value="freezer">Freezer</option><option value="despensa">Despensa</option></select></div>
+          <select id="fe-local">${['geladeira','freezer','despensa'].map(l =>
+            `<option value="${l}" ${l === localPadrao ? 'selected' : ''}>${{geladeira:'Geladeira',freezer:'Freezer',despensa:'Despensa'}[l]}</option>`).join('')}</select></div>
         <div class="campo"><label>Qtd</label><input id="fe-qtd" type="number" step="any" value="1" inputmode="decimal"></div>
         <div class="campo"><label>Unidade</label>
           <select id="fe-un"><option>un</option><option>g</option><option>kg</option>
@@ -4257,13 +4269,51 @@ const UI = {
         onclick="UI.salvarEstoque()">Salvar no estoque</button>`);
     setTimeout(() => document.getElementById('fe-nome').focus(), 100);
   },
+  /* Se o item já existe (mesmo nome canônico), sugere a mesma unidade para a soma funcionar */
+  checaItemExistente() {
+    const hint = document.getElementById('fe-hint');
+    const nome = document.getElementById('fe-nome').value.trim();
+    const ex = nome.length >= 2 ? S.estoque.find(e => canonico(e.nome) === canonico(nome)) : null;
+    if (!ex) { hint.style.display = 'none'; return; }
+    const rotLocal = { geladeira: 'na geladeira', freezer: 'no freezer', despensa: 'na despensa' }[ex.local] || '';
+    hint.innerHTML = `Você já tem <b>${U.esc(ex.nome)}</b>: ${U.fmtQtd(ex.qtd)} ${U.esc(ex.unidade)} ${rotLocal}. ` +
+      `Salvando no mesmo local com unidade compatível, as quantidades serão <b>somadas</b>.`;
+    hint.style.display = 'block';
+    // pré-seleciona a unidade do item existente (adiciona a opção se não estiver na lista)
+    const sel = document.getElementById('fe-un');
+    if (![...sel.options].some(o => o.value === ex.unidade)) {
+      const o = document.createElement('option'); o.value = o.textContent = ex.unidade; sel.appendChild(o);
+    }
+    sel.value = ex.unidade;
+  },
   salvarEstoque() {
     const nome = document.getElementById('fe-nome').value.trim();
     if (!nome) { UI.toast('Dê um nome ao item'); return; }
-    const item = { id: U.id(), nome, local: document.getElementById('fe-local').value,
-      qtd: parseFloat(document.getElementById('fe-qtd').value) || 1,
-      unidade: document.getElementById('fe-un').value,
-      validade: document.getElementById('fe-val').value || null };
+    const local = document.getElementById('fe-local').value;
+    const qtd = parseFloat(document.getElementById('fe-qtd').value) || 1;
+    const unidade = document.getElementById('fe-un').value;
+    const validade = document.getElementById('fe-val').value || null;
+    // mesmo item (nome canônico) no MESMO local → soma em vez de duplicar
+    const ex = S.estoque.find(e => canonico(e.nome) === canonico(nome) && e.local === local);
+    if (ex) {
+      const conv = U.convUnid(qtd, unidade, ex.unidade);
+      if (conv !== null) {
+        ex.qtd = Math.round((ex.qtd + conv) * 100) / 100;
+        // validade: mantém a MAIS PRÓXIMA (o lote mais antigo dita o alerta)
+        if (validade) ex.validade = ex.validade ? (validade < ex.validade ? validade : ex.validade) : validade;
+        DB.salvar('estoque', ex);
+        UI.fecharOverlay();
+        UI.toast(`Somado: "${ex.nome}" agora tem ${U.fmtQtd(ex.qtd)} ${ex.unidade} ✓`);
+        UI.render(); return;
+      }
+      // unidades incompatíveis (ex.: un × g) → entrada separada, avisando
+      const item = { id: U.id(), nome, local, qtd, unidade, validade };
+      S.estoque.push(item); DB.salvar('estoque', item);
+      UI.fecharOverlay();
+      UI.toast(`Unidades diferentes (${ex.unidade} × ${unidade}) — item criado separado`);
+      UI.render(); return;
+    }
+    const item = { id: U.id(), nome, local, qtd, unidade, validade };
     S.estoque.push(item); DB.salvar('estoque', item);
     UI.fecharOverlay(); UI.toast(`"${nome}" no estoque ✓`); UI.render();
   },
@@ -4555,7 +4605,7 @@ const UI = {
       </div>
       <div class="dica" style="margin-top:8px">Tudo fica salvo apenas neste dispositivo (IndexedDB). O backup é um arquivo JSON seu — leve para onde quiser.</div>
       <div class="secao-rotulo">Sobre</div>
-      <div class="dica">ChefPrep v1.7 · offline-first · 716 receitas · busca fuzzy · desfazer · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
+      <div class="dica">ChefPrep v1.7.1 · offline-first · 716 receitas · busca fuzzy · desfazer · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
   },
   setPerfil(p) {
     S.config.perfil = p; DB.salvar('config', S.config);
