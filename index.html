@@ -359,13 +359,16 @@ const U = {
     if (n == null || isNaN(n)) return '';
     return (Math.round(n * 100) / 100).toString().replace('.', ',');
   },
-  /* Converte qtd entre unidades compatíveis; null = incompatíveis (não dá para somar) */
+  /* Converte qtd entre unidades compatíveis; null = incompatíveis (não dá para somar).
+     Massa: g↔kg. Volume (hub em ml): ml, l, col sopa (15), col chá (5), xíc (240). */
   convUnid(qtd, de, para) {
     const a = U.norm(de), b = U.norm(para);
     if (a === b) return qtd;
-    const tab = { 'g|kg': 0.001, 'kg|g': 1000, 'ml|l': 0.001, 'l|ml': 1000 };
-    const f = tab[a + '|' + b];
-    return f ? qtd * f : null;
+    const massa = { g: 1, kg: 1000 };
+    if (a in massa && b in massa) return qtd * massa[a] / massa[b];
+    const vol = { ml: 1, l: 1000, 'col sopa': 15, 'col cha': 5, 'xic': 240 };
+    if (a in vol && b in vol) return qtd * vol[a] / vol[b];
+    return null;
   },
   diaSemana: ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado']
 };
@@ -433,6 +436,7 @@ const SINONIMOS = {
   'ervilha em conserva': 'ervilha', 'presunto magro': 'presunto',
   'cacau em po': 'cacau', 'ovos de codorna': 'ovo de codorna',
   'noz moscada': 'noz-moscada', 'pimenta do reino': 'pimenta-do-reino',
+  'shoyo': 'molho shoyu', 'molho shoyo': 'molho shoyu',
   'mandioquinha salsa': 'mandioquinha', 'batata baroa': 'mandioquinha',
   'carne seca': 'carne de sol', 'charque': 'carne de sol', 'jaba': 'carne de sol',
   'polvilho doce': 'polvilho', 'polvilho azedo': 'polvilho',
@@ -3720,6 +3724,35 @@ function indiceEstoque() {
   return idx;
 }
 
+/* --- Resolvedor tolerante despensa↔receita ---
+   "molho shoyo" no estoque casa com "molho shoyu" da receita.
+   Regras conservadoras para não juntar coisas diferentes:
+   - mesmo nº de palavras; por palavra: igual, singular/plural igual,
+     ou typo de MESMO comprimento (substituição/transposição, 1ª letra igual, ≥5 letras).
+   - comprimento igual barra derivações tipo pimenta→pimentão. */
+function casaTokenEstoque(a, b) {
+  if (a === b) return true;
+  const ra = raizPt(a), rb = raizPt(b);
+  if (ra === rb) return true;                              // plural/singular
+  if (a[0] !== b[0] || a.length !== b.length) return false;
+  return Math.min(a.length, b.length) >= 5 && distOSA(a, b, 1) <= 1;
+}
+function resolverEstoque(c, idx, cache) {
+  if (idx[c]) return c;
+  if (cache && cache.has(c)) return cache.get(c);
+  const ta = c.split(' ').sort();
+  let achado = null;
+  for (const k of Object.keys(idx)) {
+    const tb = k.split(' ').sort();
+    if (tb.length !== ta.length) continue;
+    let ok = true;
+    for (let i = 0; i < ta.length; i++) if (!casaTokenEstoque(ta[i], tb[i])) { ok = false; break; }
+    if (ok) { achado = k; break; }
+  }
+  if (cache) cache.set(c, achado);
+  return achado;
+}
+
 /* --- SuggestionProvider (contrato fixo — a v2 com IA implementa a mesma interface)
    entrada:  { receitas, estoque, opcoes }
    saída:    [{ receita, score, tem[], faltam[], faltaCritico, badge, usaVencendo }] --- */
@@ -3727,6 +3760,7 @@ const SuggestionProvider = {
   nome: 'deterministico-v1',
   sugerir({ receitas, opcoes = {} } = {}) {
     const idx = indiceEstoque();
+    const cacheRes = new Map();
     const diasAlerta = S.config.diasAlertaValidade;
     const res = [];
     for (const r of receitas) {
@@ -3737,9 +3771,10 @@ const SuggestionProvider = {
       for (const ing of obrig) {
         const c = canonico(ing.nome);
         if (ehBasico(c)) { tem.push(ing); continue; } // básico: sempre disponível
-        if (idx[c] && idx[c].some(e => e.qtd > 0)) {
+        const k = resolverEstoque(c, idx, cacheRes);
+        if (k && idx[k].some(e => e.qtd > 0)) {
           tem.push(ing);
-          if (idx[c].some(e => {
+          if (idx[k].some(e => {
             const d = U.diasAte(e.validade);
             return d !== null && d >= 0 && d <= diasAlerta;
           })) usaVencendo = true;
@@ -3832,11 +3867,13 @@ function buscarReceitas() {
 /* --- Gerador de lista de compras: diff(receita − estoque) --- */
 function itensFaltantes(receita, porcoes) {
   const idx = indiceEstoque();
+  const cacheRes = new Map();
   const fator = porcoes / receita.porcoesBase;
   return receita.ingredientes
     .filter(i => !i.opcional)
     .filter(i => !ehBasico(i.nome))
-    .filter(i => !(idx[canonico(i.nome)] || []).some(e => e.qtd > 0))
+    .filter(i => { const k = resolverEstoque(canonico(i.nome), idx, cacheRes);
+                   return !(k && idx[k].some(e => e.qtd > 0)); })
     .map(i => ({ nome: i.nome, qtd: Math.round(i.qtd * fator * 100) / 100, unidade: i.unidade }));
 }
 function addNaLista(itens, origem) {
@@ -3855,19 +3892,25 @@ function addNaLista(itens, origem) {
 /* --- Baixa de estoque ao cozinhar (best-effort: só quando a unidade bate) --- */
 function darBaixa(receita, porcoes) {
   const idx = indiceEstoque();
+  const cacheRes = new Map();
   const fator = porcoes / receita.porcoesBase;
   let baixados = 0;
   for (const ing of receita.ingredientes.filter(i => !i.opcional)) {
-    const itens = idx[canonico(ing.nome)] || [];
+    const k = resolverEstoque(canonico(ing.nome), idx, cacheRes);
+    const itens = (k && idx[k]) || [];
     // consome primeiro o que vence antes
     itens.sort((a, b) => (a.validade || '9999') < (b.validade || '9999') ? -1 : 1);
-    let precisa = ing.qtd * fator;
+    let restante = ing.qtd * fator; // controlado na unidade da RECEITA
     for (const e of itens) {
-      if (precisa <= 0) break;
-      if (U.norm(e.unidade) !== U.norm(ing.unidade)) continue; // unidade diferente: não arrisca
-      const usa = Math.min(e.qtd, precisa);
+      if (restante <= 0) break;
+      // converte a necessidade para a unidade do item (l↔ml, g↔kg, colheres/xíc↔ml)
+      const precisaAqui = U.convUnid(restante, ing.unidade, e.unidade);
+      if (precisaAqui === null) continue; // unidades incompatíveis: não arrisca
+      const usa = Math.min(e.qtd, precisaAqui);
+      if (usa <= 0) continue;
       e.qtd = Math.round((e.qtd - usa) * 100) / 100;
-      precisa -= usa; baixados++;
+      restante -= U.convUnid(usa, e.unidade, ing.unidade); // volta para a unidade da receita
+      baixados++;
       if (e.qtd <= 0) { DB.remover('estoque', e.id); S.estoque = S.estoque.filter(x => x.id !== e.id); }
       else DB.salvar('estoque', e);
     }
@@ -4605,7 +4648,7 @@ const UI = {
       </div>
       <div class="dica" style="margin-top:8px">Tudo fica salvo apenas neste dispositivo (IndexedDB). O backup é um arquivo JSON seu — leve para onde quiser.</div>
       <div class="secao-rotulo">Sobre</div>
-      <div class="dica">ChefPrep v1.7.1 · offline-first · 716 receitas · busca fuzzy · desfazer · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
+      <div class="dica">ChefPrep v1.7.2 · offline-first · 716 receitas · busca fuzzy · desfazer · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
   },
   setPerfil(p) {
     S.config.perfil = p; DB.salvar('config', S.config);
