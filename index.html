@@ -294,6 +294,12 @@ nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);
 .toast .toast-desfazer{background:none;border:0;color:#FFC864;font:inherit;font-weight:800;
   padding:6px 12px;border-radius:99px;cursor:pointer;flex:none}
 .toast .toast-desfazer:active{background:rgba(255,255,255,.12)}
+.btn-mais{width:100%;justify-content:center;margin-top:10px;background:var(--louca);
+  border:2px dashed var(--linha);color:var(--cinza);font-weight:700}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--louca);border:1.5px solid var(--linha);border-radius:14px;padding:12px}
+.stat b{display:block;font-size:22px;line-height:1.1}
+.stat small{color:var(--cinza);font-size:12px}
 
 .escondido{display:none!important}
 @media(min-width:700px){
@@ -374,6 +380,7 @@ const U = {
 };
 
 /* ============ SINÔNIMOS PT-BR (busca "inteligente" determinística) ============ */
+const CAT_EMOJI = { 'Prato principal':'🍛', 'Acompanhamento':'🍚', 'Rápido':'⚡', 'Doce':'🍰', 'Salada':'🥗', 'Sopa':'🍲', 'Molho/Tempero':'🧂', 'Conserva':'🫙' };
 const SINONIMOS = {
   'macaxeira': 'mandioca', 'aipim': 'mandioca',
   'jerimum': 'abobora', 'moranga': 'abobora',
@@ -3810,6 +3817,27 @@ function resolverVocab(nome) {
   return null;
 }
 function chaveItemEstoque(it) { return it.can || canonico(it.nome); }
+/* Adiciona ao estoque com convergência + soma (usado pelo form e pela lista de compras) */
+function adicionarOuSomarEstoque({ nome, local, qtd, unidade, validade }) {
+  const can = resolverVocab(nome);
+  const chave = can || canonico(nome);
+  const ex = S.estoque.find(e => chaveItemEstoque(e) === chave && e.local === local);
+  if (ex) {
+    const conv = U.convUnid(qtd, unidade, ex.unidade);
+    if (conv !== null) {
+      ex.qtd = Math.round((ex.qtd + conv) * 100) / 100;
+      if (validade) ex.validade = ex.validade ? (validade < ex.validade ? validade : ex.validade) : validade;
+      DB.salvar('estoque', ex);
+      return { somou: true, item: ex };
+    }
+    const sep = { id: U.id(), nome, local, qtd, unidade, validade: validade || null, ...(can ? { can } : {}) };
+    S.estoque.push(sep); DB.salvar('estoque', sep);
+    return { somou: false, conflitoUnidade: ex.unidade, item: sep };
+  }
+  const item = { id: U.id(), nome, local, qtd, unidade, validade: validade || null, ...(can ? { can } : {}) };
+  S.estoque.push(item); DB.salvar('estoque', item);
+  return { somou: false, item };
+}
 /* migra itens antigos: grava o vínculo em quem ainda não tem (1x por sessão) */
 function vincularEstoqueAntigo() {
   let n = 0;
@@ -4094,6 +4122,7 @@ const UI = {
         <button class="atalho" onclick="UI.formReceita()"><span>📖</span>Nova receita</button>
         <button class="atalho" onclick="UI.ir('plano')"><span>📅</span>Planejar semana</button>
         <button class="atalho" onclick="UI.ir('lista')"><span>🛒</span>Lista de compras</button>
+        <button class="atalho" onclick="UI.vEstatisticas()"><span>📊</span>Estatísticas</button>
       </div>`;
     return h;
   },
@@ -4145,7 +4174,7 @@ const UI = {
     </div>
     <div class="chips">
       ${cats.map((c, i) => `<button class="chip ${f.cat === c ? 'ativo' : ''}"
-        onclick="S.filtroReceitas.cat=UI._cats[${i}];UI.render()">${c === 'todas' ? 'Todas' : U.esc(c)}</button>`).join('')}
+        onclick="S.filtroReceitas.cat=UI._cats[${i}];UI.render()">${c === 'todas' ? 'Todas' : (CAT_EMOJI[c] ? CAT_EMOJI[c] + ' ' : '') + U.esc(c)}</button>`).join('')}
       <button class="chip ${f.soFavoritas ? 'ativo' : ''}"
         onclick="S.filtroReceitas.soFavoritas=!S.filtroReceitas.soFavoritas;UI.render()">★ Favoritas</button>
       <button class="chip ${f.disp === 'ok' ? 'ativo' : ''}"
@@ -4165,22 +4194,32 @@ const UI = {
     const el = document.getElementById('lista-receitas');
     if (el) el.innerHTML = UI.htmlListaReceitas(lista, sugMap);
   },
+  _limReceitas: 40,
+  _sigReceitas: '',
+  mostrarMaisReceitas() { UI._limReceitas += 80; UI.renderSoLista(); },
   htmlListaReceitas(lista, sugMap) {
     if (!lista.length) return `<div class="vazio"><b>Nada encontrado</b>
       Tente outro termo — a busca também procura por ingrediente (ex.: "frango", "macaxeira").</div>`;
-    return lista.map(r => {
+    // virtualização leve: mudou o filtro → volta ao lote inicial
+    const sig = JSON.stringify(S.filtroReceitas);
+    if (sig !== UI._sigReceitas) { UI._sigReceitas = sig; UI._limReceitas = 40; }
+    const visiveis = lista.slice(0, UI._limReceitas);
+    const restantes = lista.length - visiveis.length;
+    return visiveis.map(r => {
       const s = sugMap[r.id];
       return `<div class="card ${s && s.badge === 'ok' ? 'pronta' : ''}">
         <div class="card-topo"><div>
           <h3>${U.esc(r.nome)}</h3>
-          <div class="meta">${U.esc(r.categoria)} · ⏱ ${r.tempoMin} min · ${r.porcoesBase} porções</div>
+          <div class="meta">${CAT_EMOJI[r.categoria] || ''} ${U.esc(r.categoria)} · ⏱ ${r.tempoMin} min · ${r.porcoesBase} porções</div>
         </div>
         <button class="btn-fav" onclick="UI.toggleFav('${r.id}')" aria-label="Favoritar">${r.favorito ? '★' : '☆'}</button></div>
         ${s && s.badge === 'ok' ? '<div style="margin-top:6px"><span class="badge ok">Pode fazer agora</span></div>' : ''}
         <div class="card-acoes">
           <button class="btn btn-mini btn-primario" onclick="UI.detalheReceita('${r.id}')">Abrir</button>
         </div></div>`;
-    }).join('');
+    }).join('') + (restantes > 0
+      ? `<button class="btn btn-mais" onclick="UI.mostrarMaisReceitas()">Mostrar mais ↓ <small>(${restantes} restante${restantes === 1 ? '' : 's'})</small></button>`
+      : '');
   },
   toggleFav(id) {
     const r = S.receitas.find(x => x.id === id);
@@ -4194,8 +4233,10 @@ const UI = {
     const p = porcoes || r.porcoesBase;
     const fator = p / r.porcoesBase;
     const idx = indiceEstoque();
+    const cacheRes = new Map();
     const ingHTML = r.ingredientes.map(i => {
-      const temEstoque = (idx[canonico(i.nome)] || []).some(e => e.qtd > 0);
+      const kEst = resolverEstoque(canonico(i.nome), idx, cacheRes);
+      const temEstoque = !!(kEst && idx[kEst].some(e => e.qtd > 0));
       const basico = !temEstoque && ehBasico(i.nome);
       return `<div class="ing-linha ${temEstoque || basico || i.opcional ? '' : 'sem'}">
         <i class="pt ${temEstoque ? 'tem' : basico ? 'bas' : (i.opcional ? 'opc' : 'falta')}"
@@ -4294,6 +4335,8 @@ const UI = {
   baixaEstoque(id, porcoes) {
     const r = S.receitas.find(x => x.id === id);
     const n = darBaixa(r, porcoes);
+    r.vezesCozinhada = (r.vezesCozinhada || 0) + 1;
+    DB.salvar('receitas', r);
     UI.fecharOverlay();
     UI.toast(n ? 'Estoque atualizado ✓' : 'Nada para baixar (unidades diferentes)');
     UI.render();
@@ -4421,32 +4464,12 @@ const UI = {
     const qtd = parseFloat(document.getElementById('fe-qtd').value) || 1;
     const unidade = document.getElementById('fe-un').value;
     const validade = document.getElementById('fe-val').value || null;
-    // convergência direta: resolve e grava o vínculo com o vocabulário das receitas
-    const can = resolverVocab(nome);
-    const chave = can || canonico(nome);
-    // mesmo item (vínculo canônico) no MESMO local → soma em vez de duplicar
-    const ex = S.estoque.find(e => chaveItemEstoque(e) === chave && e.local === local);
-    if (ex) {
-      const conv = U.convUnid(qtd, unidade, ex.unidade);
-      if (conv !== null) {
-        ex.qtd = Math.round((ex.qtd + conv) * 100) / 100;
-        // validade: mantém a MAIS PRÓXIMA (o lote mais antigo dita o alerta)
-        if (validade) ex.validade = ex.validade ? (validade < ex.validade ? validade : ex.validade) : validade;
-        DB.salvar('estoque', ex);
-        UI.fecharOverlay();
-        UI.toast(`Somado: "${ex.nome}" agora tem ${U.fmtQtd(ex.qtd)} ${ex.unidade} ✓`);
-        UI.render(); return;
-      }
-      // unidades incompatíveis (ex.: un × g) → entrada separada, avisando
-      const item = { id: U.id(), nome, local, qtd, unidade, validade, ...(can ? { can } : {}) };
-      S.estoque.push(item); DB.salvar('estoque', item);
-      UI.fecharOverlay();
-      UI.toast(`Unidades diferentes (${ex.unidade} × ${unidade}) — item criado separado`);
-      UI.render(); return;
-    }
-    const item = { id: U.id(), nome, local, qtd, unidade, validade, ...(can ? { can } : {}) };
-    S.estoque.push(item); DB.salvar('estoque', item);
-    UI.fecharOverlay(); UI.toast(`"${nome}" no estoque ✓`); UI.render();
+    const res = adicionarOuSomarEstoque({ nome, local, qtd, unidade, validade });
+    UI.fecharOverlay();
+    if (res.somou) UI.toast(`Somado: "${res.item.nome}" agora tem ${U.fmtQtd(res.item.qtd)} ${res.item.unidade} ✓`);
+    else if (res.conflitoUnidade) UI.toast(`Unidades diferentes (${res.conflitoUnidade} × ${unidade}) — item criado separado`);
+    else UI.toast(`"${nome}" no estoque ✓`);
+    UI.render();
   },
 
   /* ---------- PLANO SEMANAL ---------- */
@@ -4586,17 +4609,81 @@ const UI = {
   },
   compradosProEstoque() {
     const feitos = S.lista.filter(l => l.comprado);
-    const local = prompt('Local padrão para os itens? (geladeira / freezer / despensa)', 'despensa');
-    if (!local) return;
-    const loc = ['geladeira', 'freezer', 'despensa'].includes(U.norm(local)) ? U.norm(local) : 'despensa';
+    if (!feitos.length) return;
+    UI.folha('Mover para o estoque', `
+      <div class="dica" style="margin-bottom:12px">${feitos.length} ite${feitos.length === 1 ? 'm' : 'ns'} comprado${feitos.length === 1 ? '' : 's'}
+        ser${feitos.length === 1 ? 'á' : 'ão'} adicionado${feitos.length === 1 ? '' : 's'} ao estoque.
+        Itens que você já tem serão <b>somados</b> automaticamente.</div>
+      <div class="campo"><label>Guardar em</label>
+        <select id="mv-local"><option value="despensa">Despensa</option>
+          <option value="geladeira">Geladeira</option><option value="freezer">Freezer</option></select></div>
+      <button class="btn btn-primario" style="width:100%;justify-content:center"
+        onclick="UI.confirmarComprados()">Mover ${feitos.length} ite${feitos.length === 1 ? 'm' : 'ns'} ✓</button>`);
+  },
+  confirmarComprados() {
+    const loc = document.getElementById('mv-local').value;
+    const feitos = S.lista.filter(l => l.comprado);
+    let somados = 0, criados = 0;
     for (const l of feitos) {
-      const item = { id: U.id(), nome: l.nome, local: loc,
-        qtd: l.qtd || 1, unidade: l.unidade || 'un', validade: null };
-      S.estoque.push(item); DB.salvar('estoque', item);
+      const r = adicionarOuSomarEstoque({ nome: l.nome, local: loc,
+        qtd: l.qtd || 1, unidade: l.unidade || 'un', validade: null });
+      r.somou ? somados++ : criados++;
       S.lista = S.lista.filter(x => x.id !== l.id); DB.remover('lista', l.id);
     }
-    UI.toast(`${feitos.length} ite${feitos.length === 1 ? 'm' : 'ns'} no estoque ✓`);
+    UI.fecharOverlay();
+    UI.toast(somados ? `Estoque: ${criados} novo${criados === 1 ? '' : 's'}, ${somados} somado${somados === 1 ? '' : 's'} ✓`
+                     : `${criados} ite${criados === 1 ? 'm' : 'ns'} no estoque ✓`);
     UI.render();
+  },
+
+  /* ---------- ESTATÍSTICAS ---------- */
+  vEstatisticas() {
+    const sug = SuggestionProvider.sugerir({ receitas: S.receitas });
+    const prontas = sug.filter(s => s.faltam.length === 0).length;
+    const falta1 = sug.filter(s => s.faltam.length === 1).length;
+    const falta2 = sug.filter(s => s.faltam.length === 2).length;
+    const favoritas = S.receitas.filter(r => r.favorito).length;
+    const minhas = S.receitas.filter(r => r.origem !== 'seed').length;
+    const porLocal = { geladeira: 0, freezer: 0, despensa: 0 };
+    let vencidos = 0, vencendo = 0;
+    for (const e of S.estoque) {
+      if (porLocal[e.local] !== undefined) porLocal[e.local]++;
+      const d = U.diasAte(e.validade);
+      if (d !== null) { if (d < 0) vencidos++; else if (d <= (S.config.diasAlertaValidade || 3)) vencendo++; }
+    }
+    const pendentes = S.lista.filter(l => !l.comprado).length;
+    const cozinhadas = S.receitas.reduce((a, r) => a + (r.vezesCozinhada || 0), 0);
+    const top = S.receitas.filter(r => r.vezesCozinhada > 0)
+      .sort((a, b) => b.vezesCozinhada - a.vezesCozinhada).slice(0, 5);
+    const stat = (n, rot, cor) => `<div class="stat"><b${cor ? ` style="color:${cor}"` : ''}>${n}</b><small>${rot}</small></div>`;
+    UI.folha('📊 Estatísticas', `
+      <h4 style="margin:0 0 8px">Receitas</h4>
+      <div class="stats-grid">
+        ${stat(S.receitas.length, 'no total')}
+        ${stat(prontas, 'posso fazer agora', 'var(--esmalte)')}
+        ${stat(falta1, 'falta 1 ingrediente')}
+        ${stat(falta2, 'faltam 2 ingredientes')}
+        ${stat(favoritas, '★ favoritas')}
+        ${stat(minhas, 'criadas por você')}
+      </div>
+      <h4 style="margin:0 0 8px">Estoque</h4>
+      <div class="stats-grid">
+        ${stat(S.estoque.length, 'itens no total')}
+        ${stat(vencendo, 'vencendo em breve', vencendo ? '#C9862B' : null)}
+        ${stat(vencidos, 'vencidos', vencidos ? '#C0392B' : null)}
+        ${stat(porLocal.geladeira, '🧊 na geladeira')}
+        ${stat(porLocal.freezer, '❄️ no freezer')}
+        ${stat(porLocal.despensa, '🥫 na despensa')}
+      </div>
+      <h4 style="margin:0 0 8px">Cozinha</h4>
+      <div class="stats-grid">
+        ${stat(cozinhadas, 'receitas cozinhadas')}
+        ${stat(pendentes, 'itens na lista de compras')}
+      </div>
+      ${top.length ? `<h4 style="margin:0 0 8px">Mais cozinhadas</h4>
+        ${top.map(r => `<div class="ing-linha"><span>${CAT_EMOJI[r.categoria] || ''} ${U.esc(r.nome)}</span>
+          <span class="qtd-ing">${r.vezesCozinhada}×</span></div>`).join('')}`
+      : `<div class="dica">Marque "Cozinhei!" ao fim de uma receita para ver seu ranking aqui.</div>`}`);
   },
 
   /* ---------- FORM DE RECEITA (cadastro manual = RecipeImporter v1) ---------- */
@@ -4736,7 +4823,7 @@ const UI = {
       </div>
       <div class="dica" style="margin-top:8px">Tudo fica salvo apenas neste dispositivo (IndexedDB). O backup é um arquivo JSON seu — leve para onde quiser.</div>
       <div class="secao-rotulo">Sobre</div>
-      <div class="dica">ChefPrep v1.8 · offline-first · 716 receitas · busca fuzzy · desfazer · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
+      <div class="dica">ChefPrep v1.9 · offline-first · 716 receitas · busca fuzzy · desfazer · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
   },
   setPerfil(p) {
     S.config.perfil = p; DB.salvar('config', S.config);
