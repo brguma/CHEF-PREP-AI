@@ -3976,8 +3976,8 @@ function itensFaltantes(receita, porcoes) {
 function addNaLista(itens, origem) {
   let n = 0;
   for (const it of itens) {
-    const c = canonico(it.nome);
-    const jaTem = S.lista.find(l => !l.comprado && canonico(l.nome) === c);
+    const c = resolverVocab(it.nome) || canonico(it.nome);
+    const jaTem = S.lista.find(l => !l.comprado && (resolverVocab(l.nome) || canonico(l.nome)) === c);
     if (jaTem) continue;
     const novo = { id: U.id(), nome: it.nome, qtd: it.qtd || null,
                    unidade: it.unidade || '', comprado: false, origem: origem || 'manual' };
@@ -4334,6 +4334,7 @@ const UI = {
   },
   baixaEstoque(id, porcoes) {
     const r = S.receitas.find(x => x.id === id);
+    if (!r) { UI.fecharOverlay(); UI.render(); return; }
     const n = darBaixa(r, porcoes);
     r.vezesCozinhada = (r.vezesCozinhada || 0) + 1;
     DB.salvar('receitas', r);
@@ -4778,7 +4779,7 @@ const UI = {
       nutri: nutri || (ant ? ant.nutri : null),
       favorito: ant ? ant.favorito : false, origem: 'manual' };
     if (ant) Object.assign(ant, r); else S.receitas.push(r);
-    DB.salvar('receitas', r);
+    DB.salvar('receitas', ant || r); // ant preserva campos fora do form (ex.: vezesCozinhada)
     UI.fecharOverlay(); UI.toast('Receita salva ✓'); UI.render();
   },
 
@@ -4823,7 +4824,7 @@ const UI = {
       </div>
       <div class="dica" style="margin-top:8px">Tudo fica salvo apenas neste dispositivo (IndexedDB). O backup é um arquivo JSON seu — leve para onde quiser.</div>
       <div class="secao-rotulo">Sobre</div>
-      <div class="dica">ChefPrep v1.9 · offline-first · 716 receitas · busca fuzzy · desfazer · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
+      <div class="dica">ChefPrep v1.9.1 · offline-first · 716 receitas · busca fuzzy · desfazer · PWA instalável · importação de receitas<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
   },
   setPerfil(p) {
     S.config.perfil = p; DB.salvar('config', S.config);
