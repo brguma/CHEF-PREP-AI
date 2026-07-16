@@ -1,6 +1,6 @@
 # 🍳 ChefPrep
 
-![version](https://img.shields.io/badge/version-1.9.1-orange) ![PWA](https://img.shields.io/badge/PWA-offline--first-blue) ![dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen) ![recipes](https://img.shields.io/badge/recipes-716-red)
+![version](https://img.shields.io/badge/version-1.9.1-orange) ![PWA](https://img.shields.io/badge/PWA-offline--first-blue) ![dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen) ![recipes](https://img.shields.io/badge/recipes-716-red) ![license](https://img.shields.io/badge/license-proprietary-lightgrey)
 
 **🇺🇸 [English](#-english) · 🇧🇷 [Português](#-português)**
 
@@ -54,7 +54,9 @@ All data lives in your browser's IndexedDB. Nothing ever leaves your device. Bac
 
 ### 📄 License
 
-MIT
+**Proprietary software** — © 2026 Bruno Machado, BM Engenharia e Consultoria Ltda. All rights reserved.
+
+Personal, non-commercial use of the app as provided is permitted, and your data is always yours (JSON export/import). Copying, modifying, redistributing, or commercially exploiting the source code, the recipe database, or any component is prohibited without prior written permission. See the [LICENSE](LICENSE) file for the full terms. For licensing inquiries, contact the author.
 
 ---
 
@@ -106,4 +108,6 @@ Todos os dados vivem no IndexedDB do seu navegador. Nada sai do seu aparelho. Ba
 
 ### 📄 Licença
 
-MIT
+**Software proprietário** — © 2026 Bruno Machado, BM Engenharia e Consultoria Ltda. Todos os direitos reservados.
+
+O uso pessoal e não comercial do app, na forma disponibilizada, é permitido — e os seus dados são sempre seus (exportar/importar JSON). É proibido copiar, modificar, redistribuir ou explorar comercialmente o código-fonte, o banco de receitas ou qualquer componente sem autorização prévia por escrito. Consulte o arquivo [LICENSE](LICENSE) para os termos completos. Para licenciamento, contate o autor.
