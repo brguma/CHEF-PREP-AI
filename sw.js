@@ -3,8 +3,8 @@
    - index.html: sempre busca da REDE quando online (atualização automática,
      sem desinstalar, sem ritual de versão); cache só como fallback offline.
    - estáticos (ícones, manifest): cache-first. */
-const CACHE = 'chefprep-v1.9.1';
-const SHELL = ['./', './index.html', './manifest.webmanifest',
+const CACHE = 'chefprep-v1.10.0';
+const SHELL = ['./', './index.html', './receitas.json', './manifest.webmanifest',
                './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -19,7 +19,8 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   const ehApp = e.request.mode === 'navigate' ||
-    url.pathname.endsWith('/index.html') || url.pathname.endsWith('/');
+    url.pathname.endsWith('/index.html') || url.pathname.endsWith('/') ||
+    url.pathname.endsWith('/receitas.json'); // banco de receitas também atualiza pela rede
   if (ehApp) {
     // REDE PRIMEIRO: online = versão mais nova sempre; offline = cache
     e.respondWith(
