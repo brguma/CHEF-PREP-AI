@@ -468,7 +468,18 @@ const SINONIMOS = {
   'polvilho doce': 'polvilho', 'polvilho azedo': 'polvilho',
   'flocos de milho': 'flocao de milho', 'cuscuz de milho': 'flocao de milho', 'flocao': 'flocao de milho',
   'pao frances': 'pao', 'pao de forma': 'pao', 'pao amanhecido': 'pao', 'paes': 'pao',
-  'leite condensado integral': 'leite condensado', 'queijo de coalho': 'queijo coalho'
+  'leite condensado integral': 'leite condensado', 'queijo de coalho': 'queijo coalho',
+  'vina': 'salsicha', 'salsicha hot dog': 'salsicha',
+  'rap10': 'tortilha', 'pao folha': 'tortilha', 'wrap': 'tortilha',
+  'pao arabe': 'pao sirio', 'pao pita': 'pao sirio', 'pita': 'pao sirio',
+  'disco de pastel': 'massa de pastel', 'massa pronta de pastel': 'massa de pastel',
+  'cheddar': 'queijo cheddar', 'whey': 'whey protein', 'proteina em po': 'whey protein',
+  'manteiga de amendoim': 'pasta de amendoim', 'creme de amendoim': 'pasta de amendoim',
+  'semente de chia': 'chia', 'sementes de chia': 'chia',
+  'goiabada cascao': 'goiabada', 'espiga de milho': 'milho',
+  'milho pipoca': 'milho de pipoca', 'queijo provolone': 'provolone',
+  'pao de burger': 'pao de hamburguer', 'pao brioche': 'pao de hamburguer',
+  'fermento de pao': 'fermento biologico', 'fermento seco': 'fermento biologico'
 };
 function canonico(nome) {
   const n = U.norm(nome);
@@ -558,7 +569,7 @@ async function carregarTudo() {
    Para lançar receitas novas: adicionar em RECEITAS_SEED e subir SEED_VERSION.
    Instalações existentes recebem só as inéditas (por nome canônico),
    sem duplicar, sem tocar em favoritos/edições e respeitando exclusões. */
-const SEED_VERSION = 7;
+const SEED_VERSION = 8;
 async function carregarSeed() {
   const resp = await fetch('./receitas.json', { cache: 'no-cache' });
   if (!resp.ok) throw new Error('seed http ' + resp.status);
@@ -741,6 +752,17 @@ function resolverVocab(nome) {
       if (i === -1) return false; usados.add(i); return true;
     });
     if (cobre) return v;
+  }
+  // hífen ≈ espaço: "banana da terra" → "banana-da-terra"
+  const semHifen = c.replace(/-/g, ' ');
+  for (const v of vocab) if (v.replace(/-/g, ' ') === semHifen) return v;
+  // CABEÇA + qualificadores: "alface americana", "arroz integral" → vocab de 1 palavra.
+  // A cabeça (1º token) precisa casar com o vocábulo — "suco de laranja" NÃO vira
+  // laranja (cabeça é "suco"), preservando a proteção contra falsos positivos.
+  if (exp.length >= 2 && exp.length <= 3) {
+    for (const v of vocab) {
+      if (!v.includes(' ') && casaTokenEstoque(exp[0], v)) return v;
+    }
   }
   return null;
 }
@@ -2005,7 +2027,7 @@ const UI = {
       </div>
       <div class="dica" style="margin-top:8px">Tudo fica salvo apenas neste dispositivo (IndexedDB). O backup é um arquivo JSON seu — leve para onde quiser.</div>
       <div class="secao-rotulo">Sobre</div>
-      <div class="dica">ChefPrep v1.10.0 · offline-first · 716 receitas · conferência de baixa · chegada da feira · substituições · seed externo<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
+      <div class="dica">ChefPrep v1.11.0 · offline-first · 817 receitas · airfryer e micro-ondas · conferência de baixa · chegada da feira · substituições<br>Motor de sugestão: ${SuggestionProvider.nome}</div>`);
   },
   setPerfil(p) {
     S.config.perfil = p; DB.salvar('config', S.config);
