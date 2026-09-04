@@ -5,30 +5,33 @@ Data: 2026-09-04
 Status: ATIVO — P1 no Project Mesh
 
 ## Último marco concluído
-Baseline funcional mais recente identificado no histórico Git: `v1.11.0`, commit `e25cce487dbb25abccdf34751d9b4037158f9476`, com 817 receitas e melhorias no matching despensa↔receita.
+Project Mesh bootstrap incorporado à `main` pelo PR #1, squash commit `53eec059a725f25f40f63e2beeed492abc1d98b4`.
+
+Baseline funcional conhecido permanece `v1.11.0`, commit funcional anterior `e25cce487dbb25abccdf34751d9b4037158f9476`, com 817 receitas e melhorias no matching despensa↔receita. O README foi reconciliado com esse baseline durante o bootstrap.
 
 ## Em andamento
-- Bootstrap do Project Mesh para permitir retomada por ChatGPT/Claude sem briefing conversacional completo.
-- PR #1 aberto com documentação de handoff e correção documental do README; nenhum código funcional foi alterado nesta rodada.
+- Hardening de governança/privacidade do repositório.
+- Bruno aprovou a recomendação de tornar o repo PRIVADO como estado-alvo, sem interromper o aplicativo publicado.
+- A execução da mudança de visibilidade permanece condicionada à confirmação do deploy/Pages compatível.
 
 ## Próximos passos
-1. Revisar o bootstrap no PR #1 e, após aprovação/merge, tratá-lo como baseline de handoff do projeto.
-2. Decidir a visibilidade do repositório. Recomendação atual: PRIVADO por padrão, desde que o impacto sobre o GitHub Pages/deploy seja resolvido antes da mudança.
-3. Confirmar o ambiente/deploy efetivamente utilizado hoje e executar uma rodada de baseline QA no app publicado ou servido localmente.
-4. Validar smoke tests essenciais: primeira instalação, atualização de versão, persistência IndexedDB, offline, import/export, matching, lista→despensa e baixa de estoque.
+1. Confirmar o ambiente de publicação efetivamente utilizado hoje e se há dependência ativa do GitHub Pages.
+2. Confirmar que o plano/benefício atual permite o deploy pretendido a partir de repo privado ou, se necessário, migrar o deploy para hospedagem compatível.
+3. Tornar `brguma/CHEF-PREP-AI` privado somente quando a transição não derrubar o app.
+4. Executar baseline QA: primeira instalação, atualização de versão, persistência IndexedDB, offline, import/export, matching, lista→despensa e baixa de estoque.
 5. Só depois escolher a próxima missão funcional do produto; antes dela, consultar BANCO IA + concorrentes/análogos + Gate 0.
 
 ## Bloqueios
-- URL/ambiente de produção atual não confirmado neste bootstrap.
-- Visibilidade do repo está pública no GitHub; falta decisão explícita de Bruno antes de alterar porque isso pode afetar GitHub Pages e é uma mudança material de permissão/visibilidade.
-- Não há uma suíte de testes automatizados versionada visível na raiz; vários testes são documentados nos commits recentes, mas precisam ser transformados em baseline reproduzível se quisermos automação contínua.
+- O conector GitHub disponível nesta sessão confirma `visibility: public`, mas não expõe ação de alteração de visibilidade do repositório.
+- O endpoint/configuração detalhada do GitHub Pages e o plano efetivamente ativo não puderam ser confirmados pelo conector atual com confiança suficiente para alterar a visibilidade sem risco de indisponibilidade.
+- Não há uma suíte de testes automatizados versionada visível na raiz; vários testes são documentados nos commits recentes, mas precisam virar baseline reproduzível se quisermos automação contínua.
 
 ## Git
-- Branch de bootstrap: `chore/project-mesh-bootstrap`
-- Baseline `main` antes do bootstrap: `e25cce487dbb25abccdf34751d9b4037158f9476`
-- PR: #1 — `https://github.com/brguma/CHEF-PREP-AI/pull/1`
+- `main` após bootstrap: `53eec059a725f25f40f63e2beeed492abc1d98b4`.
+- PR #1 — MERGED.
+- Branch atual de hardening documental: `chore/privacy-hardening-state`.
 - Visibilidade observada pela API em 2026-09-04: `public`.
-- README alinhado nesta branch ao baseline v1.11.0 / 817 receitas.
+- README em `main`: alinhado a v1.11.0 / 817 receitas.
 
 ## Testes / validação
 Evidência histórica recente no Git:
@@ -37,16 +40,18 @@ Evidência histórica recente no Git:
 - v1.9.1: auditoria com correções de integridade de dados, deduplicação e regressões de matching.
 
 Estado nesta rodada:
-- Nenhum teste executável foi rodado pelo bootstrap porque não houve mudança no código funcional.
+- O bootstrap/README foi revisado e mergeado sem alterar lógica funcional.
+- Nenhum teste funcional novo foi executado porque a rodada tratou de documentação/governança.
 - A próxima missão deve transformar os testes críticos em checklist reproduzível e, se proporcional, automação versionada.
 
 ## Deploy
-- Ambiente: hospedagem estática/PWA; o repositório informa GitHub Pages habilitado, mas o endpoint efetivo e a dependência atual do Pages ainda precisam ser confirmados antes de tornar o repo privado.
+- Arquitetura: hospedagem estática/PWA.
+- O repositório tem indicação de GitHub Pages habilitado, mas a URL/rota efetivamente usada pelos usuários e a compatibilidade com repo privado ainda precisam ser confirmadas antes da mudança de visibilidade.
 - Estado: não alterado nesta rodada.
 
 ## Riscos / dúvidas atuais
-- Repositório público + licença proprietária: o código, histórico, `receitas.json` e documentação interna do Project Mesh ficam acessíveis e copiáveis tecnicamente; a licença restringe uso jurídico, mas não impede clonagem/scraping.
-- Mesmo com repo privado, um frontend estático publicado continua entregando HTML/JS e o seed de receitas ao navegador; privacidade do repo protege histórico, branches e documentação interna, não transforma código client-side em segredo absoluto.
+- Repositório público + licença proprietária: código, histórico e documentação interna ficam acessíveis tecnicamente; decisão aprovada é migrar para privado quando seguro.
+- Mesmo com repo privado, um frontend estático publicado continuará entregando HTML/JS e o seed de receitas ao navegador; a mudança protege o repositório e o processo de desenvolvimento, não transforma ativos client-side em segredo absoluto.
 - Arquitetura single-file facilita distribuição, mas aumenta custo de manutenção conforme o produto cresce; não migrar sem Gate 0 comparando manter/refatorar modularmente/reimplementar.
 - Mudanças em Service Worker e migrações de seed têm risco elevado de regressão em atualização e dados locais.
 - Matching fuzzy é capacidade central e deve ter testes negativos explícitos para evitar falsos positivos.
@@ -55,7 +60,6 @@ Estado nesta rodada:
 Para retomar sem depender da conversa:
 - Leia primeiro `.ai/PROJECT_CONTEXT.md`, este arquivo e `.ai/DECISIONS.md`.
 - O repo canônico é `brguma/CHEF-PREP-AI`; `brguma/app-creator` está arquivado e não deve substituir este projeto por padrão.
-- Baseline funcional conhecido: v1.11.0 / 817 receitas / commit `e25cce4`.
-- README da branch de bootstrap já foi reconciliado com esse baseline.
-- Não altere visibilidade do repo sem decisão explícita de Bruno e sem verificar impacto no deploy/Pages.
+- Baseline funcional conhecido: v1.11.0 / 817 receitas / commit `e25cce4`; bootstrap do Project Mesh está na `main` desde `53eec05`.
+- Decisão confirmada: tornar o repo PRIVADO como estado-alvo, mas somente após validar impacto no deploy/Pages.
 - Antes de implementar nova feature: consultar BANCO IA, concorrentes/análogos e Gate 0; usar branch + PR.
