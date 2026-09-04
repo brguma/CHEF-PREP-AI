@@ -9,10 +9,10 @@ Baseline funcional mais recente identificado no histórico Git: `v1.11.0`, commi
 
 ## Em andamento
 - Bootstrap do Project Mesh para permitir retomada por ChatGPT/Claude sem briefing conversacional completo.
-- Nenhum desenvolvimento funcional novo foi autorizado nesta rodada.
+- PR #1 aberto com a documentação de handoff; nenhum desenvolvimento funcional novo foi autorizado nesta rodada.
 
 ## Próximos passos
-1. Revisar este bootstrap via PR e, após aprovação/merge, tratá-lo como baseline de handoff do projeto.
+1. Revisar o bootstrap no PR #1 e, após aprovação/merge, tratá-lo como baseline de handoff do projeto.
 2. Confirmar o ambiente/deploy efetivamente utilizado hoje e executar uma rodada de baseline QA no app publicado ou servido localmente.
 3. Reconciliar documentação: o README ainda informa 716 receitas enquanto o histórico mais recente registra 817.
 4. Validar smoke tests essenciais: primeira instalação, atualização de versão, persistência IndexedDB, offline, import/export, matching, lista→despensa e baixa de estoque.
@@ -26,7 +26,7 @@ Baseline funcional mais recente identificado no histórico Git: `v1.11.0`, commi
 ## Git
 - Branch de bootstrap: `chore/project-mesh-bootstrap`
 - Baseline `main` antes do bootstrap: `e25cce487dbb25abccdf34751d9b4037158f9476`
-- PR: a preencher após abertura.
+- PR: #1 — `https://github.com/brguma/CHEF-PREP-AI/pull/1`
 
 ## Testes / validação
 Evidência histórica recente no Git:
