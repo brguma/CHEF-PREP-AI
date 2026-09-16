@@ -127,58 +127,56 @@
   }
 
   addNaLista = function(itens, origem) {
-    let n = 0;
-    for (const it of itens) {
-      const c = resolverVocab(it.nome) || canonico(it.nome);
-      const candidatos = S.lista.filter(l => !l.comprado && (resolverVocab(l.nome) || canonico(l.nome)) === c);
-      let jaTem = null;
-      let convertido = null;
+  let n = 0;
+  const fonte = origem || 'manual';
+  for (const it of itens) {
+    const c = resolverVocab(it.nome) || canonico(it.nome);
+    const candidatos = S.lista.filter(l =>
+      !l.comprado &&
+      (resolverVocab(l.nome) || canonico(l.nome)) === c &&
+      (it.qtd == null || (l.origem || 'manual') === fonte));
 
-      if (it.qtd == null) {
-        jaTem = candidatos[0] || null;
-      } else {
-        jaTem = candidatos.find(l => l.qtd == null) || null;
-        if (!jaTem) {
-          for (const l of candidatos) {
-            const conv = convParaItem(it.qtd, it.unidade || l.unidade, l.unidade, c);
-            if (conv) { jaTem = l; convertido = conv.v; break; }
-          }
-        }
+    let jaTem = null;
+    let convertido = null;
+    if (it.qtd == null) {
+      jaTem = candidatos[0] || null;
+    } else {
+      for (const l of candidatos) {
+        if (l.qtd == null) { jaTem = l; break; }
+        const conv = convParaItem(it.qtd, it.unidade || l.unidade, l.unidade, c);
+        if (conv) { jaTem = l; convertido = conv.v; break; }
       }
-
-      if (jaTem) {
-        if (it.qtd != null) {
-          if (jaTem.qtd == null) {
-            jaTem.qtd = it.qtd;
-            jaTem.unidade = it.unidade || jaTem.unidade || '';
-            DB.salvar('lista', jaTem);
-            n++;
-          } else {
-            const valor = convertido == null
-              ? (convParaItem(it.qtd, it.unidade || jaTem.unidade, jaTem.unidade, c) || {}).v
-              : convertido;
-            if (valor != null && valor > jaTem.qtd + EPS) {
-              jaTem.qtd = Math.round(valor * 100) / 100;
-              DB.salvar('lista', jaTem);
-              n++;
-            }
-          }
-        }
-        continue;
-      }
-
-      const novo = {
-        id: U.id(), nome: it.nome, qtd: it.qtd == null ? null : it.qtd,
-        unidade: it.unidade || '', comprado: false, origem: origem || 'manual'
-      };
-      S.lista.push(novo);
-      DB.salvar('lista', novo);
-      n++;
     }
-    return n;
-  };
 
-  UI.gerarListaDaSemana = function() {
+    if (jaTem) {
+      if (it.qtd != null) {
+        const valor = jaTem.qtd == null
+          ? it.qtd
+          : (convertido == null
+              ? (convParaItem(it.qtd, it.unidade || jaTem.unidade, jaTem.unidade, c) || {}).v
+              : convertido);
+        if (valor != null && (jaTem.qtd == null || Math.abs(valor - jaTem.qtd) > EPS)) {
+          jaTem.qtd = Math.round(valor * 100) / 100;
+          if (!jaTem.unidade) jaTem.unidade = it.unidade || '';
+          DB.salvar('lista', jaTem);
+          n++;
+        }
+      }
+      continue;
+    }
+
+    const novo = {
+      id: U.id(), nome: it.nome, qtd: it.qtd == null ? null : it.qtd,
+      unidade: it.unidade || '', comprado: false, origem: fonte
+    };
+    S.lista.push(novo);
+    DB.salvar('lista', novo);
+    n++;
+  }
+  return n;
+};
+
+UI.gerarListaDaSemana = function() {
     const todos = itensFaltantesPlano(S.plano);
     if (!todos.length) { UI.toast('Nada faltando — estoque cobre o plano ✓'); return; }
     const n = addNaLista(todos, 'plano semanal');
