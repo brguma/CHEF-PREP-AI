@@ -97,4 +97,11 @@ assert.match(sw, /if \(!resp\.ok\) throw new Error/);
 assert.match(sw, /legacy\.html/);
 assert.match(sw, /core-fixes\.js/);
 
+// 7) O bootstrap precisa carregar o baseline e injetar o patch com uma tag de script válida.
+const index = fs.readFileSync('index.html', 'utf8');
+assert.match(index, /fetch\('\.\/legacy\.html'/);
+assert.match(index, /core-fixes\.js\?v=1\.11\.1/);
+assert.match(index, /const patch = '<scr' \+ 'ipt/);
+assert.match(index, /<\/scr' \+ 'ipt>'/);
+
 console.log('ChefPrep core regression tests: OK');
