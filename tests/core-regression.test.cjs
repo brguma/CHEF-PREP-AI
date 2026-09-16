@@ -8,7 +8,8 @@ global.U = {
   id: (() => { let n = 0; return () => `id-${++n}`; })(),
   fmtQtd: n => String(Math.round(n * 100) / 100).replace('.', ','),
   hojeISO: () => '2026-09-16',
-  diasAte: () => null
+  diasAte: () => null,
+  esc: s => String(s ?? '')
 };
 global.canonico = norm;
 global.ehBasico = nome => (global.S.config.basicos || []).includes(norm(nome));
@@ -90,18 +91,24 @@ const alterados2 = addNaLista([{ nome: 'frango', qtd: 200, unidade: 'g' }], 'tes
 assert.equal(alterados2, 0);
 assert.equal(S.lista[0].qtd, 300);
 
-// 6) O Service Worker deve estar versionado e proteger o cache de HTTP inválido.
+// 6) Mesma coisa com unidade incompatível não pode ser descartada silenciosamente.
+S.lista = [{ id: 'l2', nome: 'frango', qtd: 2, unidade: 'un', comprado: false }];
+const incompat = addNaLista([{ nome: 'frango', qtd: 300, unidade: 'g' }], 'teste');
+assert.equal(incompat, 1);
+assert.equal(S.lista.length, 2);
+assert.ok(S.lista.some(x => x.unidade === 'g' && x.qtd === 300));
+
+// 7) Service Worker: versão nova, patch no shell e sem cachear resposta HTTP inválida.
 const sw = fs.readFileSync('sw.js', 'utf8');
 assert.match(sw, /chefprep-v1\.11\.1/);
 assert.match(sw, /if \(!resp\.ok\) throw new Error/);
-assert.match(sw, /legacy\.html/);
 assert.match(sw, /core-fixes\.js/);
+assert.doesNotMatch(sw, /legacy\.html/);
 
-// 7) O bootstrap precisa carregar o baseline e injetar o patch com uma tag de script válida.
+// 8) Estrutura final: index original carrega o módulo de correção diretamente, sem bootstrap intermediário.
 const index = fs.readFileSync('index.html', 'utf8');
-assert.match(index, /fetch\('\.\/legacy\.html'/);
-assert.match(index, /core-fixes\.js\?v=1\.11\.1/);
-assert.match(index, /const patch = '<scr' \+ 'ipt/);
-assert.match(index, /<\/scr' \+ 'ipt>'/);
+assert.match(index, /<script src="\.\/core-fixes\.js\?v=1\.11\.1"><\/script>/);
+assert.doesNotMatch(index, /legacy\.html/);
+assert.match(index, /const SuggestionProvider/);
 
 console.log('ChefPrep core regression tests: OK');
