@@ -176,7 +176,16 @@
   return n;
 };
 
-UI.gerarListaDaSemana = function() {
+UI.faltantesPraLista = function(id, porcoes) {
+    const r = S.receitas.find(x => x.id === id);
+    if (!r) return;
+    const p = porcoes || r.porcoesBase;
+    const n = addNaLista(itensFaltantes(r, p), 'receita: ' + r.nome);
+    UI.toast(n ? `${n} ite${n === 1 ? 'm' : 'ns'} na lista de compras` : 'Itens já estavam na lista');
+    UI.render();
+  };
+
+  UI.gerarListaDaSemana = function() {
     const todos = itensFaltantesPlano(S.plano);
     if (!todos.length) { UI.toast('Nada faltando — estoque cobre o plano ✓'); return; }
     const n = addNaLista(todos, 'plano semanal');
@@ -193,6 +202,12 @@ UI.gerarListaDaSemana = function() {
     if (!r || typeof document === 'undefined') return;
     const p = porcoes || r.porcoesBase;
     const fator = p / r.porcoesBase;
+    const btnLista = [...document.querySelectorAll('#overlays button')]
+      .find(btn => (btn.getAttribute('onclick') || '').includes('UI.faltantesPraLista('));
+    if (btnLista) {
+      btnLista.removeAttribute('onclick');
+      btnLista.onclick = () => { UI.faltantesPraLista(id, p); UI.fecharOverlay(); };
+    }
     const idx = indiceEstoque(), cacheRes = new Map();
     const rows = [...document.querySelectorAll('#overlays .ing-linha')].slice(0, r.ingredientes.length);
     r.ingredientes.forEach((ing, i) => {
@@ -220,13 +235,17 @@ UI.gerarListaDaSemana = function() {
   const cardOriginal = UI.cardSugestao;
   UI.cardSugestao = function(s) {
     let html = cardOriginal.call(UI, s);
-    for (const i of s.faltam || []) {
-      if (!i.parcial || !(i.qtdFaltante > 0)) continue;
-      const puro = U.esc(i.nome);
-      const detalhado = `${puro} (faltam ${U.fmtQtd(i.qtdFaltante)} ${U.esc(i.unidade)})`;
-      html = html.replace(`>${puro}</b>`, `>${detalhado}</b>`);
-    }
-    return html;
+    if (!(s.faltam || []).length) return html;
+    const nomes = s.faltam.map(i => {
+      const nome = U.esc(i.nome);
+      return i.parcial && i.qtdFaltante > 0
+        ? `${nome} (faltam ${U.fmtQtd(i.qtdFaltante)} ${U.esc(i.unidade)})`
+        : nome;
+    }).join(', ');
+    return html.replace(
+      /(<div class="placar-legenda">Falta: <b>)[\s\S]*?(<\/b><\/div>)/,
+      (_m, inicio, fim) => inicio + nomes + fim
+    );
   };
 
   function substituirTudoAtomico(dump, config) {
@@ -302,4 +321,14 @@ UI.gerarListaDaSemana = function() {
   };
 
   globalThis.ChefPrepCoreFixes = { coberturaIngrediente, itensFaltantesPlano, substituirTudoAtomico };
+
+  // Se o IndexedDB terminou de inicializar enquanto este arquivo ainda carregava,
+  // a UI pode ter sido renderizada uma vez com o motor antigo. Corrige sem causar
+  // o flash de uma tela vazia no caminho normal (quando o bootstrap ainda não renderizou).
+  if (typeof document !== 'undefined') {
+    const tela = document.getElementById('tela');
+    if (tela && String(tela.innerHTML || '').trim()) {
+      try { UI.render(); } catch (e) { console.warn('ChefPrep reliability rerender:', e); }
+    }
+  }
 })();

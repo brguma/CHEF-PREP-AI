@@ -36,16 +36,22 @@ global.DB = { salvar: () => Promise.resolve(true) };
 global.addNaLista = function() {};
 global.itensFaltantes = function() {};
 global.UI = {
-  gerarListaDaSemana() {}, detalheReceita() {}, importarJSON() {}, abrirConfig() {}, render() {},
+  gerarListaDaSemana() {}, detalheReceita() {}, importarJSON() {}, abrirConfig() {}, render() { global.__renderCount = (global.__renderCount || 0) + 1; },
   toast() {}, ir() {}, fecharOverlay() {},
-  cardSugestao(s) { return `<div>Falta: <b>${s.faltam.map(i => i.nome).join(', ')}</b></div>`; }
+  cardSugestao(s) { return `<div class=\"placar-legenda\">Falta: <b>${s.faltam.map(i => i.nome).join(', ')}</b></div>`; }
 };
 global.carregarTudo = async () => {};
 global.confirm = () => true;
 global.indexedDB = { open() { throw new Error('not used in unit tests'); } };
 global.FileReader = function() {};
+global.__renderCount = 0;
+global.document = {
+  getElementById(id) { return id === 'tela' ? { innerHTML: '<div>baseline rendered</div>' } : null; },
+  querySelectorAll() { return []; }
+};
 
 vm.runInThisContext(fs.readFileSync('core-fixes.js', 'utf8'), { filename: 'core-fixes.js' });
+assert.equal(global.__renderCount, 1, 'patch deve rerenderizar uma UI que já tenha sido renderizada pelo bootstrap');
 
 function receita(qtd, unidade = 'g') {
   return { id: 'r1', nome: 'Frango teste', porcoesBase: 1, favorito: false,
@@ -79,7 +85,22 @@ const faltaPlano = ChefPrepCoreFixes.itensFaltantesPlano(plano);
 assert.equal(faltaPlano.length, 1);
 assert.equal(faltaPlano[0].qtd, 300);
 
-// 4) Mesma origem: a linha existente é atualizada para o total mais recente.
+// 4) Detalhe escalonado: faltantes devem respeitar as porções escolhidas, não as porções-base.
+S.receitas = [receita(500)];
+S.estoque = [];
+S.lista = [];
+UI.faltantesPraLista('r1', 2);
+assert.equal(S.lista.length, 1);
+assert.equal(S.lista[0].qtd, 1000);
+
+// 5) A legenda deve anotar falta parcial mesmo quando ela não é o primeiro ingrediente.
+const cardParcial = UI.cardSugestao({ faltam: [
+  { nome: 'tomate', parcial: false },
+  { nome: 'frango', parcial: true, qtdFaltante: 125, unidade: 'g' }
+] });
+assert.match(cardParcial, /tomate, frango \(faltam 125 g\)/);
+
+// 6) Mesma origem: a linha existente é atualizada para o total mais recente.
 S.lista = [{ id: 'l1', nome: 'frango', qtd: 100, unidade: 'g', comprado: false, origem: 'teste' }];
 const alterados = addNaLista([{ nome: 'frango', qtd: 300, unidade: 'g' }], 'teste');
 assert.equal(alterados, 1);
