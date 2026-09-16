@@ -1,0 +1,26 @@
+name: ChefPrep regression tests
+
+on:
+  push:
+    branches:
+      - main
+      - fix/core-reliability-2026-09
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  core-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check patch syntax
+        run: node --check core-fixes.js
+      - name: Run core regression suite
+        run: node tests/core-regression.test.cjs
