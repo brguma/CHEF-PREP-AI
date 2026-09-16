@@ -14,6 +14,9 @@ Há um candidato de hardening `v1.11.1` na branch `fix/core-reliability-2026-09`
 - Faltas parciais passam a informar a quantidade realmente faltante.
 - Plano semanal consolida a demanda total de todas as refeições antes de descontar o estoque, evitando reutilizar o mesmo estoque várias vezes.
 - Lista de compras é idempotente por origem: a mesma origem atualiza seu total; demandas independentes e unidades incompatíveis permanecem em linhas separadas.
+- Ao escalar uma receita para mais/menos porções, `+ Faltantes na lista` agora usa a quantidade de porções escolhida, não a porção-base da receita.
+- Legendas de faltas parciais foram corrigidas para funcionar mesmo quando o ingrediente parcial não é o primeiro da lista de faltantes.
+- O carregamento do hardening cobre a corrida rara em que o bootstrap termina antes de `core-fixes.js`: se a UI antiga já tiver sido renderizada, ela é renderizada novamente uma vez com o motor corrigido.
 - Restauração de backup foi endurecida com validação prévia e transação IndexedDB multistore atômica.
 - Service Worker foi alinhado a `chefprep-v1.11.1` e não substitui cache válido por respostas HTTP com erro.
 - `core-fixes.js` concentra o hardening sobre o baseline v1.11.0, deixando `index.html` praticamente intacto e facilitando revisão/rollback.
@@ -25,6 +28,9 @@ Casos cobertos:
 - estoque parcial (ex.: 50 g disponíveis para necessidade de 500 g);
 - soma de lotes com conversão kg↔g;
 - consolidação de demanda repetida no plano semanal;
+- faltantes respeitando a quantidade de porções selecionada;
+- legenda de falta parcial quando o ingrediente não aparece primeiro;
+- rerender defensivo quando o bootstrap já produziu a tela antes do hardening;
 - atualização e redução idempotentes da mesma origem na lista de compras;
 - preservação de demandas independentes por origem e de demandas com unidades incompatíveis;
 - estrutura final de carregamento de `core-fixes.js`;
