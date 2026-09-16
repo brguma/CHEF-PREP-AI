@@ -7,13 +7,13 @@ Status: ATIVO — P1 no Project Mesh
 ## Estado atual
 O baseline publicado/canônico em `main` continua sendo `v1.11.0` / 817 receitas até merge e validação de deploy.
 
-Há um candidato de hardening `v1.11.1` na branch `fix/core-reliability-2026-09`. Ele preserva a arquitetura vanilla/offline-first e corrige problemas de confiabilidade encontrados na auditoria do núcleo, sem introduzir framework, backend ou migração destrutiva.
+Há um candidato de hardening `v1.11.1` na branch `fix/core-reliability-2026-09`, atualmente no PR #4. Ele preserva a arquitetura vanilla/offline-first e corrige problemas de confiabilidade encontrados na auditoria do núcleo, sem introduzir framework, backend ou migração destrutiva.
 
 ## Correções do candidato v1.11.1
 - Matching despensa↔receita agora considera **quantidade suficiente**, não apenas presença de algum estoque.
 - Faltas parciais passam a informar a quantidade realmente faltante.
 - Plano semanal consolida a demanda total de todas as refeições antes de descontar o estoque, evitando reutilizar o mesmo estoque várias vezes.
-- Lista de compras atualiza a quantidade necessária de itens já existentes e preserva linhas separadas quando as unidades são incompatíveis.
+- Lista de compras é idempotente por origem: a mesma origem atualiza seu total; demandas independentes e unidades incompatíveis permanecem em linhas separadas.
 - Restauração de backup foi endurecida com validação prévia e transação IndexedDB multistore atômica.
 - Service Worker foi alinhado a `chefprep-v1.11.1` e não substitui cache válido por respostas HTTP com erro.
 - `core-fixes.js` concentra o hardening sobre o baseline v1.11.0, deixando `index.html` praticamente intacto e facilitando revisão/rollback.
@@ -25,12 +25,12 @@ Casos cobertos:
 - estoque parcial (ex.: 50 g disponíveis para necessidade de 500 g);
 - soma de lotes com conversão kg↔g;
 - consolidação de demanda repetida no plano semanal;
-- atualização idempotente da lista de compras;
+- atualização e redução idempotentes da mesma origem na lista de compras;
 - preservação de demandas independentes por origem e de demandas com unidades incompatíveis;
 - estrutura final de carregamento de `core-fixes.js`;
 - versionamento/cache do Service Worker e rejeição de HTTP inválido antes de cachear.
 
-A suíte passou nas rodadas anteriores do hardening; o gate para merge é manter o run final verde após qualquer ajuste adicional.
+PR #4 está aberto; o gate para merge é manter os workflows de regressão verdes no commit final e concluir o QA de navegador/PWA.
 
 ## Validação ainda necessária antes de tratar como release concluída
 1. Manter CI/regressão verde no commit final da branch/PR.
@@ -54,5 +54,6 @@ A suíte passou nas rodadas anteriores do hardening; o gate para merge é manter
 - Repositório canônico: `brguma/CHEF-PREP-AI`.
 - `brguma/app-creator` não é a implementação atual por padrão.
 - Branch de hardening atual: `fix/core-reliability-2026-09`.
+- PR atual: #4.
 - Não fazer push direto em `main`; concluir via PR + gates.
 - Antes de nova feature relevante: consultar BANCO IA, concorrentes/análogos e Gate 0.
