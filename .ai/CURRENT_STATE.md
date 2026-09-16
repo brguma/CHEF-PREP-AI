@@ -26,7 +26,7 @@ Casos cobertos:
 - soma de lotes com conversão kg↔g;
 - consolidação de demanda repetida no plano semanal;
 - atualização idempotente da lista de compras;
-- preservação de demandas com unidades incompatíveis;
+- preservação de demandas independentes por origem e de demandas com unidades incompatíveis;
 - estrutura final de carregamento de `core-fixes.js`;
 - versionamento/cache do Service Worker e rejeição de HTTP inválido antes de cachear.
 
