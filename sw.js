@@ -20,7 +20,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   const ehApp = e.request.mode === 'navigate' ||
     url.pathname.endsWith('/index.html') || url.pathname.endsWith('/') ||
-    url.pathname.endsWith('/legacy.html') || url.pathname.endsWith('/receitas.json');
+    url.pathname.endsWith('/receitas.json');
   if (ehApp) {
     // REDE PRIMEIRO: online = versão mais nova sempre; offline = cache.
     // Resposta HTTP com erro não substitui uma cópia válida no cache.
