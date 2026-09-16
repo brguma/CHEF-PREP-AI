@@ -1,10 +1,10 @@
 /* ChefPrep (c) 2026 Bruno Machado - BM Engenharia e Consultoria Ltda. Todos os direitos reservados. */
 /* v1.11.1 — estratégia network-first para o app:
-   - index.html/legacy.html: sempre busca da REDE quando online (atualização automática,
+   - index.html: sempre busca da REDE quando online (atualização automática,
      sem desinstalar, sem ritual de versão); cache só como fallback offline.
    - estáticos (patch, ícones, manifest): cache-first. */
 const CACHE = 'chefprep-v1.11.1';
-const SHELL = ['./', './index.html', './legacy.html', './core-fixes.js', './receitas.json', './manifest.webmanifest',
+const SHELL = ['./', './index.html', './core-fixes.js', './receitas.json', './manifest.webmanifest',
                './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
