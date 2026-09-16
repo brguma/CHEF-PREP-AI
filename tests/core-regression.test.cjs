@@ -79,33 +79,46 @@ const faltaPlano = ChefPrepCoreFixes.itensFaltantesPlano(plano);
 assert.equal(faltaPlano.length, 1);
 assert.equal(faltaPlano[0].qtd, 300);
 
-// 4) Lista existente deve ser atualizada para a quantidade necessária, não ignorada nem duplicada.
-S.lista = [{ id: 'l1', nome: 'frango', qtd: 100, unidade: 'g', comprado: false }];
+// 4) Mesma origem: a linha existente é atualizada para o total mais recente.
+S.lista = [{ id: 'l1', nome: 'frango', qtd: 100, unidade: 'g', comprado: false, origem: 'teste' }];
 const alterados = addNaLista([{ nome: 'frango', qtd: 300, unidade: 'g' }], 'teste');
 assert.equal(alterados, 1);
 assert.equal(S.lista.length, 1);
 assert.equal(S.lista[0].qtd, 300);
 
-// 5) Reexecutar com necessidade menor é idempotente e não infla a compra.
-const alterados2 = addNaLista([{ nome: 'frango', qtd: 200, unidade: 'g' }], 'teste');
+// 5) Reexecutar a mesma demanda/origem é idempotente.
+const alterados2 = addNaLista([{ nome: 'frango', qtd: 300, unidade: 'g' }], 'teste');
 assert.equal(alterados2, 0);
 assert.equal(S.lista[0].qtd, 300);
 
-// 6) Mesma coisa com unidade incompatível não pode ser descartada silenciosamente.
-S.lista = [{ id: 'l2', nome: 'frango', qtd: 2, unidade: 'un', comprado: false }];
+// 6) A mesma origem pode reduzir o total quando o plano/requisito diminui.
+const reduzidos = addNaLista([{ nome: 'frango', qtd: 200, unidade: 'g' }], 'teste');
+assert.equal(reduzidos, 1);
+assert.equal(S.lista[0].qtd, 200);
+
+// 7) Mesma origem com unidade incompatível não pode ser descartada silenciosamente.
+S.lista = [{ id: 'l2', nome: 'frango', qtd: 2, unidade: 'un', comprado: false, origem: 'teste' }];
 const incompat = addNaLista([{ nome: 'frango', qtd: 300, unidade: 'g' }], 'teste');
 assert.equal(incompat, 1);
 assert.equal(S.lista.length, 2);
 assert.ok(S.lista.some(x => x.unidade === 'g' && x.qtd === 300));
 
-// 7) Service Worker: versão nova, patch no shell e sem cachear resposta HTTP inválida.
+// 8) Demandas independentes de receitas diferentes não podem se engolir.
+S.lista = [{ id: 'l3', nome: 'frango', qtd: 100, unidade: 'g', comprado: false, origem: 'receita: A' }];
+const outraFonte = addNaLista([{ nome: 'frango', qtd: 200, unidade: 'g' }], 'receita: B');
+assert.equal(outraFonte, 1);
+assert.equal(S.lista.length, 2);
+assert.ok(S.lista.some(x => x.origem === 'receita: A' && x.qtd === 100));
+assert.ok(S.lista.some(x => x.origem === 'receita: B' && x.qtd === 200));
+
+// 9) Service Worker: versão nova, patch no shell e sem cachear resposta HTTP inválida.
 const sw = fs.readFileSync('sw.js', 'utf8');
 assert.match(sw, /chefprep-v1\.11\.1/);
 assert.match(sw, /if \(!resp\.ok\) throw new Error/);
 assert.match(sw, /core-fixes\.js/);
 assert.doesNotMatch(sw, /legacy\.html/);
 
-// 8) Estrutura final: index original carrega o módulo de correção diretamente, sem bootstrap intermediário.
+// 10) Estrutura final: index original carrega o módulo de correção diretamente, sem bootstrap intermediário.
 const index = fs.readFileSync('index.html', 'utf8');
 assert.match(index, /<script src="\.\/core-fixes\.js\?v=1\.11\.1"><\/script>/);
 assert.doesNotMatch(index, /legacy\.html/);
