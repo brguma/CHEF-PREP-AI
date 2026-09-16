@@ -1,6 +1,6 @@
 # 🍳 ChefPrep
 
-![version](https://img.shields.io/badge/version-1.11.0-orange) ![PWA](https://img.shields.io/badge/PWA-offline--first-blue) ![dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen) ![recipes](https://img.shields.io/badge/recipes-817-red) ![license](https://img.shields.io/badge/license-proprietary-lightgrey)
+![version](https://img.shields.io/badge/version-1.11.1-orange) ![PWA](https://img.shields.io/badge/PWA-offline--first-blue) ![dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen) ![recipes](https://img.shields.io/badge/recipes-817-red) ![license](https://img.shields.io/badge/license-proprietary-lightgrey)
 
 **🇺🇸 [English](#-english) · 🇧🇷 [Português](#-português)**
 
@@ -16,7 +16,7 @@
 
 **➕ Quantities that merge.** Add onions twice and you get one entry with the summed amount — including automatic unit conversion (500 g + 1 kg = 1.5 kg; ml↔l). When batches have expiry dates, the entry keeps the earliest one, so the alert fires for the oldest batch.
 
-**🍽️ "What can I cook right now?"** Suggestions ranked by what's in your pantry, prioritizing ingredients about to expire. Filter recipes by *ready to cook*, *missing 1 ingredient*, or *missing 2*.
+**🍽️ "What can I cook right now?"** Suggestions now require enough quantity — partial stock is reported as a shortage — and still prioritize ingredients about to expire. Filter recipes by *ready to cook*, *missing 1 ingredient*, or *missing 2*.
 
 **⏲️ Cooking mode.** Step-by-step view with one-tap timers parsed from the instructions, screen wake lock, and stock deduction when you're done — converting units on the way and consuming earliest-expiry batches first. The deduction flow includes a review step before applying changes.
 
@@ -38,7 +38,7 @@
 
 ChefPrep is a static site. Any static host works:
 
-1. Clone the repo and serve `index.html`, `sw.js`, `manifest.webmanifest` and `receitas.json` from the same site root (GitHub Pages, Netlify, or `python3 -m http.server`).
+1. Clone the repo and serve `index.html`, `core-fixes.js`, `sw.js`, `manifest.webmanifest` and `receitas.json` from the same site root (GitHub Pages, Netlify, or `python3 -m http.server`).
 2. Open it in a mobile browser and use **"Add to Home Screen"** — it installs as an app and works offline after the app shell and seed have been cached/initialized.
 3. That's it. There is no build step.
 
@@ -51,6 +51,7 @@ User data lives in the browser's IndexedDB. Backup and restore are available thr
 ### 🛠️ Tech
 
 - **App shell**: `index.html` (vanilla JS, no framework, no build step)
+- **Reliability hardening**: `core-fixes.js` (quantity-aware stock/list accounting + safer backup restore)
 - **Recipe seed**: `receitas.json`
 - **PWA**: `manifest.webmanifest` + `sw.js`
 - **Storage**: IndexedDB (recipes, pantry, weekly plan, shopping list, settings)
@@ -76,7 +77,7 @@ Personal, non-commercial use of the app as provided is permitted, and your data 
 
 **➕ Quantidades que se somam.** Adicionou cebola duas vezes? Vira uma entrada só, com a soma — incluindo conversão automática de unidades (500 g + 1 kg = 1,5 kg; ml↔l). Quando os lotes têm validade, a entrada guarda a data mais próxima, para o alerta disparar pelo lote mais antigo.
 
-**🍽️ "O que dá pra fazer agora?"** Sugestões ordenadas pelo que há na despensa, priorizando ingredientes perto de vencer. Filtre as receitas por *posso fazer*, *falta 1 ingrediente* ou *faltam 2*.
+**🍽️ "O que dá pra fazer agora?"** Sugestões agora exigem quantidade suficiente — estoque parcial aparece como falta — e continuam priorizando ingredientes perto de vencer. Filtre as receitas por *posso fazer*, *falta 1 ingrediente* ou *faltam 2*.
 
 **⏲️ Modo cozinhando.** Passo a passo com timers de um toque extraídos das instruções, wake lock e baixa de estoque ao terminar — com conversão de unidades, consumo dos lotes que vencem primeiro e tela de conferência antes de aplicar a baixa.
 
@@ -98,7 +99,7 @@ Personal, non-commercial use of the app as provided is permitted, and your data 
 
 O ChefPrep é um site estático. Qualquer hospedagem estática serve:
 
-1. Clone o repositório e sirva `index.html`, `sw.js`, `manifest.webmanifest` e `receitas.json` na mesma raiz (GitHub Pages, Netlify, ou `python3 -m http.server`).
+1. Clone o repositório e sirva `index.html`, `core-fixes.js`, `sw.js`, `manifest.webmanifest` e `receitas.json` na mesma raiz (GitHub Pages, Netlify, ou `python3 -m http.server`).
 2. Abra no navegador do celular e use **"Adicionar à tela inicial"** — instala como app e funciona offline depois que o shell e o seed forem carregados/inicializados.
 3. Não existe etapa de build.
 
@@ -111,6 +112,7 @@ Os dados do usuário ficam no IndexedDB do navegador. Backup e restauração sã
 ### 🛠️ Tecnologia
 
 - **Shell do app**: `index.html` (JavaScript puro, sem framework, sem build)
+- **Hardening de confiabilidade**: `core-fixes.js` (estoque/lista quantitativos + restauração de backup mais segura)
 - **Seed de receitas**: `receitas.json`
 - **PWA**: `manifest.webmanifest` + `sw.js`
 - **Armazenamento**: IndexedDB (receitas, despensa, plano semanal, lista de compras, configurações)

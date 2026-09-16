@@ -1,70 +1,65 @@
 # CURRENT STATE
 
 Projeto: ChefPrep
-Data: 2026-09-04
+Data: 2026-09-16
 Status: ATIVO — P1 no Project Mesh
 
-## Último marco concluído
-Project Mesh bootstrap incorporado à `main` pelo PR #1, squash commit `53eec059a725f25f40f63e2beeed492abc1d98b4`.
+## Estado atual
+O baseline publicado/canônico em `main` continua sendo `v1.11.0` / 817 receitas até merge e validação de deploy.
 
-Baseline funcional conhecido permanece `v1.11.0`, commit funcional anterior `e25cce487dbb25abccdf34751d9b4037158f9476`, com 817 receitas e melhorias no matching despensa↔receita. O README foi reconciliado com esse baseline durante o bootstrap.
+Há um candidato de hardening `v1.11.1` na branch `fix/core-reliability-2026-09`, atualmente no PR #4. Ele preserva a arquitetura vanilla/offline-first e corrige problemas de confiabilidade encontrados na auditoria do núcleo, sem introduzir framework, backend ou migração destrutiva.
 
-## Em andamento
-- Hardening de governança/privacidade do repositório.
-- Bruno aprovou a recomendação de tornar o repo PRIVADO como estado-alvo, sem interromper o aplicativo publicado.
-- A execução da mudança de visibilidade está adiada porque o benefício/plano necessário ainda não aparece ativo no GitHub e o Pages pode ser despublicado ao privatizar agora.
+## Correções do candidato v1.11.1
+- Matching despensa↔receita agora considera **quantidade suficiente**, não apenas presença de algum estoque.
+- Faltas parciais passam a informar a quantidade realmente faltante.
+- Plano semanal consolida a demanda total de todas as refeições antes de descontar o estoque, evitando reutilizar o mesmo estoque várias vezes.
+- Lista de compras é idempotente por origem: a mesma origem atualiza seu total; demandas independentes e unidades incompatíveis permanecem em linhas separadas.
+- Ao escalar uma receita para mais/menos porções, `+ Faltantes na lista` agora usa a quantidade de porções escolhida, não a porção-base da receita.
+- Legendas de faltas parciais foram corrigidas para funcionar mesmo quando o ingrediente parcial não é o primeiro da lista de faltantes.
+- O carregamento do hardening cobre a corrida rara em que o bootstrap termina antes de `core-fixes.js`: se a UI antiga já tiver sido renderizada, ela é renderizada novamente uma vez com o motor corrigido.
+- Restauração de backup foi endurecida com validação prévia e transação IndexedDB multistore atômica.
+- Service Worker foi alinhado a `chefprep-v1.11.1` e não substitui cache válido por respostas HTTP com erro.
+- `core-fixes.js` concentra o hardening sobre o baseline v1.11.0, deixando `index.html` praticamente intacto e facilitando revisão/rollback.
 
-## Próximos passos
-1. Aguardar/confirmar ativação do GitHub Pro/benefício equivalente da conta ou escolher hospedagem estática alternativa.
-2. Revalidar o gate técnico usando o estado da conta e o deploy atual.
-3. Tornar `brguma/CHEF-PREP-AI` privado somente quando a transição não derrubar o app.
-4. Executar baseline QA: primeira instalação, atualização de versão, persistência IndexedDB, offline, import/export, matching, lista→despensa e baixa de estoque.
-5. Só depois escolher a próxima missão funcional do produto; antes dela, consultar BANCO IA + concorrentes/análogos + Gate 0.
+## Testes automatizados
+Foi adicionada a suíte `tests/core-regression.test.cjs`, executada no GitHub Actions por `.github/workflows/test.yml`.
 
-## Bloqueios
-- O conector GitHub confirma `visibility: public`, mas não expõe ação de alteração de visibilidade do repositório.
-- Verificação indireta do plano em 2026-09-04: o endpoint de rulesets em repositório privado ainda retorna `Upgrade to GitHub Pro or make this repository public`, indicando que GitHub Pro ainda não está efetivamente ativo na conta.
-- Documentação oficial atual do GitHub informa que GitHub Pages em repositório privado requer GitHub Pro/Team/Enterprise; tornar um repositório com Pages publicado de público para privado despublica o site automaticamente quando o plano não oferece esse suporte.
-- Não há uma suíte de testes automatizados versionada visível na raiz; vários testes são documentados nos commits recentes, mas precisam virar baseline reproduzível se quisermos automação contínua.
+Casos cobertos:
+- estoque parcial (ex.: 50 g disponíveis para necessidade de 500 g);
+- soma de lotes com conversão kg↔g;
+- consolidação de demanda repetida no plano semanal;
+- faltantes respeitando a quantidade de porções selecionada;
+- legenda de falta parcial quando o ingrediente não aparece primeiro;
+- rerender defensivo quando o bootstrap já produziu a tela antes do hardening;
+- atualização e redução idempotentes da mesma origem na lista de compras;
+- preservação de demandas independentes por origem e de demandas com unidades incompatíveis;
+- estrutura final de carregamento de `core-fixes.js`;
+- versionamento/cache do Service Worker e rejeição de HTTP inválido antes de cachear.
 
-## Git
-- `main` após hardening documental: `943bcbdfebb5d35982de8ac5bfd415f85e0e1357`.
-- PR #1 — MERGED.
-- PR #2 — MERGED.
-- Branch atual de registro do blocker: `chore/pages-plan-blocker`.
-- Visibilidade observada pela API em 2026-09-04: `public`.
-- README em `main`: alinhado a v1.11.0 / 817 receitas.
+PR #4 está aberto; o gate para merge é manter os workflows de regressão verdes no commit final e concluir o QA de navegador/PWA.
 
-## Testes / validação
-Evidência histórica recente no Git:
-- v1.11.0: validação de schema/deduplicação das 817 receitas, migração de seed idempotente, matching e detecção de timers.
-- v1.10.0: testes de conversões, parser de entrada em lote, substituições, plano de baixa e seeding externo.
-- v1.9.1: auditoria com correções de integridade de dados, deduplicação e regressões de matching.
+## Validação ainda necessária antes de tratar como release concluída
+1. Manter CI/regressão verde no commit final da branch/PR.
+2. Revisar o diff do PR e resolver qualquer achado de code review.
+3. Executar QA de navegador/PWA proporcional: primeira instalação, atualização sobre instalação existente, persistência IndexedDB, offline, import/export, matching, lista→despensa e baixa de estoque.
+4. Só então fazer merge/deploy para `main`.
 
-Estado nesta rodada:
-- O bootstrap/README foi revisado e mergeado sem alterar lógica funcional.
-- Nenhum teste funcional novo foi executado porque a rodada tratou de documentação/governança.
-- A próxima missão deve transformar os testes críticos em checklist reproduzível e, se proporcional, automação versionada.
+## Deploy / privacidade
+- Arquitetura: hospedagem estática/PWA via GitHub Pages.
+- Repositório ainda observado como público; a decisão de estado-alvo continua sendo PRIVADO quando isso puder ser feito sem derrubar o app publicado.
+- Privatização não faz parte do hardening v1.11.1 e não deve ser misturada com este PR.
 
-## Deploy
-- Arquitetura: hospedagem estática/PWA.
-- O repositório possui GitHub Pages habilitado.
-- No estado atual da conta, privatizar agora cria risco concreto de despublicar o Pages; por isso a mudança foi bloqueada corretamente.
-- Nenhum `CNAME` foi encontrado na raiz, portanto não há custom domain versionado a tratar nesta etapa.
-- Estado: não alterado nesta rodada.
-
-## Riscos / dúvidas atuais
-- Repositório público + licença proprietária: código, histórico e documentação interna ficam acessíveis tecnicamente; decisão aprovada é migrar para privado quando seguro.
-- Mesmo com repo privado, um frontend estático publicado continuará entregando HTML/JS e o seed de receitas ao navegador; a mudança protege o repositório e o processo de desenvolvimento, não transforma ativos client-side em segredo absoluto.
-- Arquitetura single-file facilita distribuição, mas aumenta custo de manutenção conforme o produto cresce; não migrar sem Gate 0 comparando manter/refatorar modularmente/reimplementar.
-- Mudanças em Service Worker e migrações de seed têm risco elevado de regressão em atualização e dados locais.
-- Matching fuzzy é capacidade central e deve ter testes negativos explícitos para evitar falsos positivos.
+## Riscos residuais
+- O baseline continua majoritariamente single-file; `core-fixes.js` reduz o risco desta rodada, mas modularização estrutural futura ainda deve passar por Gate 0.
+- Matching fuzzy continua sendo capacidade central e requer expansão progressiva de testes positivos e negativos.
+- Há operações legadas de persistência que ainda são fire-and-forget; o hardening desta rodada corrige a restauração crítica, mas não refatora toda a camada de gravação.
+- O candidato ainda precisa de QA de navegador real antes de ser classificado como release plenamente validada.
 
 ## Handoff
-Para retomar sem depender da conversa:
-- Leia primeiro `.ai/PROJECT_CONTEXT.md`, este arquivo e `.ai/DECISIONS.md`.
-- O repo canônico é `brguma/CHEF-PREP-AI`; `brguma/app-creator` está arquivado e não deve substituir este projeto por padrão.
-- Baseline funcional conhecido: v1.11.0 / 817 receitas / commit `e25cce4`; bootstrap do Project Mesh está na `main` desde `53eec05`.
-- Decisão confirmada: tornar o repo PRIVADO como estado-alvo.
-- Execução bloqueada por enquanto: GitHub Pro ainda não aparece ativo e privatizar agora pode despublicar o GitHub Pages.
-- Antes de implementar nova feature: consultar BANCO IA, concorrentes/análogos e Gate 0; usar branch + PR.
+- Leia `.ai/PROJECT_CONTEXT.md`, este arquivo e `.ai/DECISIONS.md` antes de alterar o produto.
+- Repositório canônico: `brguma/CHEF-PREP-AI`.
+- `brguma/app-creator` não é a implementação atual por padrão.
+- Branch de hardening atual: `fix/core-reliability-2026-09`.
+- PR atual: #4.
+- Não fazer push direto em `main`; concluir via PR + gates.
+- Antes de nova feature relevante: consultar BANCO IA, concorrentes/análogos e Gate 0.
