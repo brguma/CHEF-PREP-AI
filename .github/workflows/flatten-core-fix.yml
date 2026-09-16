@@ -1,0 +1,31 @@
+name: Flatten ChefPrep reliability patch
+
+on:
+  push:
+    branches:
+      - fix/core-reliability-2026-09
+    paths:
+      - .github/workflows/flatten-core-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  flatten:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/core-reliability-2026-09
+          fetch-depth: 0
+      - name: Restore original index and load reliability module
+        run: python -c "from pathlib import Path; p=Path('legacy.html'); s=p.read_text(encoding='utf-8'); assert '</body>' in s; s=s.replace('</body>', '<script src=\"./core-fixes.js?v=1.11.1\"></script>\\n</body>', 1); Path('index.html').write_text(s, encoding='utf-8'); p.unlink(); w=Path('sw.js').read_text(encoding='utf-8'); w=w.replace(\"'./legacy.html', \", ''); w=w.replace(\"    url.pathname.endsWith('/legacy.html') || \\n\", ''); w=w.replace('index.html/legacy.html', 'index.html'); Path('sw.js').write_text(w, encoding='utf-8')"
+      - name: Remove one-shot workflow
+        run: git rm .github/workflows/flatten-core-fix.yml
+      - name: Commit flattened structure
+        run: |
+          git config user.name "ChefPrep Repair Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html sw.js legacy.html .github/workflows/flatten-core-fix.yml
+          git commit -m "refactor: integrar patch sem bootstrap intermediário"
+          git push origin HEAD:fix/core-reliability-2026-09
